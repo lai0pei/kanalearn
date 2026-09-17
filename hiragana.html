@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hiragana ひらがな — Interactive Chart</title>
+<style>
+  :root {
+    --ink:#2b2320; --paper:#fdf8f2; --card:#ffffff; --line:#e7dccb;
+    --accent:#b3272d; --accent-soft:#f6e2df; --muted:#8a7c6c;
+    --focus:#1f7a5c;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    line-height:1.5;
+  }
+  header {
+    padding:28px 20px 18px; text-align:center;
+    background:linear-gradient(180deg, var(--accent-soft), transparent);
+    border-bottom:1px solid var(--line);
+  }
+  header h1 { margin:0 0 6px; font-size:clamp(22px,5vw,32px); }
+  header p { margin:0; color:var(--muted); font-size:14px; }
+  nav.tabs {
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+    padding:14px 12px; position:sticky; top:0; background:var(--paper);
+    border-bottom:1px solid var(--line); z-index:5;
+  }
+  nav.tabs button {
+    border:1px solid var(--line); background:var(--card); color:var(--ink);
+    padding:8px 14px; border-radius:999px; font-size:13px; cursor:pointer;
+  }
+  nav.tabs button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  main { max-width:920px; margin:0 auto; padding:20px 16px 60px; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+  .section-title { font-size:18px; margin:18px 0 4px; }
+  .section-note { color:var(--muted); font-size:13px; margin:0 0 14px; }
+  .grid {
+    display:grid; grid-template-columns:repeat(var(--cols), 1fr); gap:8px;
+    margin-bottom:8px;
+  }
+  .cell {
+    aspect-ratio:1/1; border:1px solid var(--line); background:var(--card);
+    border-radius:10px; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; cursor:pointer; gap:2px; padding:4px;
+  }
+  .cell.empty { border:none; background:transparent; cursor:default; }
+  .cell .kj { font-size:clamp(18px,4.2vw,26px); }
+  .cell .rj { font-size:11px; color:var(--muted); text-transform:lowercase; }
+  .cell:hover:not(.empty) { border-color:var(--accent); }
+  .cell.playing { background:var(--accent-soft); border-color:var(--accent); }
+  button { font-family:inherit; }
+  .particles, .pairs, .words { display:flex; flex-direction:column; gap:10px; }
+  .particle-row, .word-row {
+    display:flex; gap:14px; align-items:center; background:var(--card);
+    border:1px solid var(--line); border-radius:12px; padding:10px 14px;
+  }
+  .p-kana, .w-kana {
+    flex:0 0 auto; width:56px; height:56px; border-radius:10px;
+    background:var(--accent-soft); border:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:24px; cursor:pointer;
+  }
+  .w-kana { cursor:default; width:auto; padding:0 10px; font-size:20px; }
+  .p-kana .p-romaji { font-size:10px; color:var(--muted); }
+  .p-body, .w-body { flex:1 1 auto; }
+  .p-meaning { font-weight:600; font-size:14px; }
+  .pron-note { font-weight:400; color:var(--accent); font-size:12px; }
+  .p-example { color:var(--muted); font-size:13px; margin-top:3px; }
+  .p-romaji-ex { font-style:italic; }
+  .w-romaji { font-size:12px; color:var(--muted); }
+  .w-meaning { font-weight:600; font-size:14px; }
+  .pair { border:1px solid var(--line); border-radius:12px; padding:10px 14px; background:var(--card); }
+  .pair-note { font-size:12px; color:var(--accent); font-weight:600; margin-bottom:8px; text-transform:uppercase; letter-spacing:.03em; }
+  .pair-items { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .pair-item {
+    display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+    border:1px solid var(--line); border-radius:10px; padding:10px; background:var(--paper);
+    cursor:pointer; text-align:left;
+  }
+  .pair-item:hover { border-color:var(--accent); }
+  .pair-item.playing { background:var(--accent-soft); border-color:var(--accent); }
+  .pair-item .kj { font-size:20px; }
+  .pair-item .rj { font-size:12px; color:var(--muted); }
+  .pair-item .pm { font-size:13px; margin-top:4px; }
+  footer { text-align:center; color:var(--muted); font-size:12px; padding:20px; }
+  footer a { color:var(--accent); }
+  .switch-link { display:inline-block; margin-top:6px; font-size:13px; }
+  .switch-link a { color:var(--accent); text-decoration:none; border-bottom:1px dashed var(--accent); }
+  @media (max-width:480px) {
+    .pair-items { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Hiragana <span lang="ja">ひらがな</span></h1>
+  <p>Tap or click any character to hear it spoken. Works offline once downloaded — keep this file in the same folder as <code>media-files</code>.</p>
+  <div class="switch-link">Looking for the other syllabary? <a href="katakana.html">Katakana カタカナ →</a></div>
+</header>
+<nav class="tabs" role="tablist">
+  <button data-panel="p-basic" class="active">Basic</button>
+  <button data-panel="p-voiced">Voiced</button>
+  <button data-panel="p-combined">Combined</button>
+  <button data-panel="p-meanings">Particles</button>
+  <button data-panel="p-contrasts">Sound Contrasts</button>
+</nav>
+<main>
+  <section id="p-basic" class="panel active"><h3 class="section-title">Basic Sounds — Gojūon (五十音)</h3>
+<p class="section-note">The 46 core sounds. Click any tile to hear it.</p>
+<div class="grid" style="--cols:5">
+<button type="button" class="cell " data-audio="media-files/kanasound-a.mp3" aria-label="Play a"><span class="kj">あ</span><span class="rj">a</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-i.mp3" aria-label="Play i"><span class="kj">い</span><span class="rj">i</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-u.mp3" aria-label="Play u"><span class="kj">う</span><span class="rj">u</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-e.mp3" aria-label="Play e"><span class="kj">え</span><span class="rj">e</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-o.mp3" aria-label="Play o"><span class="kj">お</span><span class="rj">o</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ka.mp3" aria-label="Play ka"><span class="kj">か</span><span class="rj">ka</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ki.mp3" aria-label="Play ki"><span class="kj">き</span><span class="rj">ki</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ku.mp3" aria-label="Play ku"><span class="kj">く</span><span class="rj">ku</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ke.mp3" aria-label="Play ke"><span class="kj">け</span><span class="rj">ke</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ko.mp3" aria-label="Play ko"><span class="kj">こ</span><span class="rj">ko</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-sa.mp3" aria-label="Play sa"><span class="kj">さ</span><span class="rj">sa</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-shi.mp3" aria-label="Play shi"><span class="kj">し</span><span class="rj">shi</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-su.mp3" aria-label="Play su"><span class="kj">す</span><span class="rj">su</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-se.mp3" aria-label="Play se"><span class="kj">せ</span><span class="rj">se</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-so.mp3" aria-label="Play so"><span class="kj">そ</span><span class="rj">so</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ta.mp3" aria-label="Play ta"><span class="kj">た</span><span class="rj">ta</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-chi.mp3" aria-label="Play chi"><span class="kj">ち</span><span class="rj">chi</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-tsu.mp3" aria-label="Play tsu"><span class="kj">つ</span><span class="rj">tsu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-te.mp3" aria-label="Play te"><span class="kj">て</span><span class="rj">te</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-to.mp3" aria-label="Play to"><span class="kj">と</span><span class="rj">to</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-na.mp3" aria-label="Play na"><span class="kj">な</span><span class="rj">na</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ni.mp3" aria-label="Play ni"><span class="kj">に</span><span class="rj">ni</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-nu.mp3" aria-label="Play nu"><span class="kj">ぬ</span><span class="rj">nu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ne.mp3" aria-label="Play ne"><span class="kj">ね</span><span class="rj">ne</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-no.mp3" aria-label="Play no"><span class="kj">の</span><span class="rj">no</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ha.mp3" aria-label="Play ha"><span class="kj">は</span><span class="rj">ha</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-hi.mp3" aria-label="Play hi"><span class="kj">ひ</span><span class="rj">hi</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-fu.mp3" aria-label="Play fu"><span class="kj">ふ</span><span class="rj">fu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-he.mp3" aria-label="Play he"><span class="kj">へ</span><span class="rj">he</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ho.mp3" aria-label="Play ho"><span class="kj">ほ</span><span class="rj">ho</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ma.mp3" aria-label="Play ma"><span class="kj">ま</span><span class="rj">ma</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-mi.mp3" aria-label="Play mi"><span class="kj">み</span><span class="rj">mi</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-mu.mp3" aria-label="Play mu"><span class="kj">む</span><span class="rj">mu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-me.mp3" aria-label="Play me"><span class="kj">め</span><span class="rj">me</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-mo.mp3" aria-label="Play mo"><span class="kj">も</span><span class="rj">mo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ya.mp3" aria-label="Play ya"><span class="kj">や</span><span class="rj">ya</span></button>
+<div class="cell empty"></div>
+<button type="button" class="cell " data-audio="media-files/kanasound-yu.mp3" aria-label="Play yu"><span class="kj">ゆ</span><span class="rj">yu</span></button>
+<div class="cell empty"></div>
+<button type="button" class="cell " data-audio="media-files/kanasound-yo.mp3" aria-label="Play yo"><span class="kj">よ</span><span class="rj">yo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ra.mp3" aria-label="Play ra"><span class="kj">ら</span><span class="rj">ra</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ri.mp3" aria-label="Play ri"><span class="kj">り</span><span class="rj">ri</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ru.mp3" aria-label="Play ru"><span class="kj">る</span><span class="rj">ru</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-re.mp3" aria-label="Play re"><span class="kj">れ</span><span class="rj">re</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ro.mp3" aria-label="Play ro"><span class="kj">ろ</span><span class="rj">ro</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-wa.mp3" aria-label="Play wa"><span class="kj">わ</span><span class="rj">wa</span></button>
+<div class="cell empty"></div>
+<div class="cell empty"></div>
+<div class="cell empty"></div>
+<button type="button" class="cell " data-audio="media-files/kanasound-wo.mp3" aria-label="Play wo"><span class="kj">を</span><span class="rj">wo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-n.mp3" aria-label="Play n"><span class="kj">ん</span><span class="rj">n</span></button>
+<div class="cell empty"></div>
+<div class="cell empty"></div>
+<div class="cell empty"></div>
+<div class="cell empty"></div>
+</div></section>
+  <section id="p-voiced" class="panel"><h3 class="section-title">Voiced Sounds — Dakuten &amp; Handakuten (濁音・半濁音)</h3>
+<p class="section-note">Two small marks change the sound: ゙ (dakuten) voices it, ゚ (handakuten) turns h- into p-.</p>
+<div class="grid" style="--cols:5">
+<button type="button" class="cell " data-audio="media-files/kanasound-ga.mp3" aria-label="Play ga"><span class="kj">が</span><span class="rj">ga</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-gi.mp3" aria-label="Play gi"><span class="kj">ぎ</span><span class="rj">gi</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-gu.mp3" aria-label="Play gu"><span class="kj">ぐ</span><span class="rj">gu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ge.mp3" aria-label="Play ge"><span class="kj">げ</span><span class="rj">ge</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-go.mp3" aria-label="Play go"><span class="kj">ご</span><span class="rj">go</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-za.mp3" aria-label="Play za"><span class="kj">ざ</span><span class="rj">za</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ji.mp3" aria-label="Play ji"><span class="kj">じ</span><span class="rj">ji</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-zu.mp3" aria-label="Play zu"><span class="kj">ず</span><span class="rj">zu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ze.mp3" aria-label="Play ze"><span class="kj">ぜ</span><span class="rj">ze</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-zo.mp3" aria-label="Play zo"><span class="kj">ぞ</span><span class="rj">zo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-da.mp3" aria-label="Play da"><span class="kj">だ</span><span class="rj">da</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ji.mp3" aria-label="Play ji"><span class="kj">ぢ</span><span class="rj">ji</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-zu.mp3" aria-label="Play zu"><span class="kj">づ</span><span class="rj">zu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-de.mp3" aria-label="Play de"><span class="kj">で</span><span class="rj">de</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-do.mp3" aria-label="Play do"><span class="kj">ど</span><span class="rj">do</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ba.mp3" aria-label="Play ba"><span class="kj">ば</span><span class="rj">ba</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-bi.mp3" aria-label="Play bi"><span class="kj">び</span><span class="rj">bi</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-bu.mp3" aria-label="Play bu"><span class="kj">ぶ</span><span class="rj">bu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-be.mp3" aria-label="Play be"><span class="kj">べ</span><span class="rj">be</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-bo.mp3" aria-label="Play bo"><span class="kj">ぼ</span><span class="rj">bo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-pa.mp3" aria-label="Play pa"><span class="kj">ぱ</span><span class="rj">pa</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-pi.mp3" aria-label="Play pi"><span class="kj">ぴ</span><span class="rj">pi</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-pu.mp3" aria-label="Play pu"><span class="kj">ぷ</span><span class="rj">pu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-pe.mp3" aria-label="Play pe"><span class="kj">ぺ</span><span class="rj">pe</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-po.mp3" aria-label="Play po"><span class="kj">ぽ</span><span class="rj">po</span></button>
+</div></section>
+  <section id="p-combined" class="panel"><h3 class="section-title">Combined Sounds — Yōon (拗音)</h3>
+<p class="section-note">A small ゃ/ゅ/ょ (or ャ/ュ/ョ) fuses with the previous syllable into one beat.</p>
+<div class="grid" style="--cols:3">
+<button type="button" class="cell " data-audio="media-files/kanasound-kya.mp3" aria-label="Play kya"><span class="kj">きゃ</span><span class="rj">kya</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-kyu.mp3" aria-label="Play kyu"><span class="kj">きゅ</span><span class="rj">kyu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-kyo.mp3" aria-label="Play kyo"><span class="kj">きょ</span><span class="rj">kyo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-sha.mp3" aria-label="Play sha"><span class="kj">しゃ</span><span class="rj">sha</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-shu.mp3" aria-label="Play shu"><span class="kj">しゅ</span><span class="rj">shu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-sho.mp3" aria-label="Play sho"><span class="kj">しょ</span><span class="rj">sho</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-cha.mp3" aria-label="Play cha"><span class="kj">ちゃ</span><span class="rj">cha</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-chu.mp3" aria-label="Play chu"><span class="kj">ちゅ</span><span class="rj">chu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-cho.mp3" aria-label="Play cho"><span class="kj">ちょ</span><span class="rj">cho</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-nya.mp3" aria-label="Play nya"><span class="kj">にゃ</span><span class="rj">nya</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-nyu.mp3" aria-label="Play nyu"><span class="kj">にゅ</span><span class="rj">nyu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-nyo.mp3" aria-label="Play nyo"><span class="kj">にょ</span><span class="rj">nyo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-hya.mp3" aria-label="Play hya"><span class="kj">ひゃ</span><span class="rj">hya</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-hyu.mp3" aria-label="Play hyu"><span class="kj">ひゅ</span><span class="rj">hyu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-hyo.mp3" aria-label="Play hyo"><span class="kj">ひょ</span><span class="rj">hyo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-mya.mp3" aria-label="Play mya"><span class="kj">みゃ</span><span class="rj">mya</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-myu.mp3" aria-label="Play myu"><span class="kj">みゅ</span><span class="rj">myu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-myo.mp3" aria-label="Play myo"><span class="kj">みょ</span><span class="rj">myo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-rya.mp3" aria-label="Play rya"><span class="kj">りゃ</span><span class="rj">rya</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ryu.mp3" aria-label="Play ryu"><span class="kj">りゅ</span><span class="rj">ryu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ryo.mp3" aria-label="Play ryo"><span class="kj">りょ</span><span class="rj">ryo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-gya.mp3" aria-label="Play gya"><span class="kj">ぎゃ</span><span class="rj">gya</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-gyu.mp3" aria-label="Play gyu"><span class="kj">ぎゅ</span><span class="rj">gyu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-gyo.mp3" aria-label="Play gyo"><span class="kj">ぎょ</span><span class="rj">gyo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ja.mp3" aria-label="Play ja"><span class="kj">じゃ</span><span class="rj">ja</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-ju.mp3" aria-label="Play ju"><span class="kj">じゅ</span><span class="rj">ju</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-jo.mp3" aria-label="Play jo"><span class="kj">じょ</span><span class="rj">jo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-bya.mp3" aria-label="Play bya"><span class="kj">びゃ</span><span class="rj">bya</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-byu.mp3" aria-label="Play byu"><span class="kj">びゅ</span><span class="rj">byu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-byo.mp3" aria-label="Play byo"><span class="kj">びょ</span><span class="rj">byo</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-pya.mp3" aria-label="Play pya"><span class="kj">ぴゃ</span><span class="rj">pya</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-pyu.mp3" aria-label="Play pyu"><span class="kj">ぴゅ</span><span class="rj">pyu</span></button>
+<button type="button" class="cell " data-audio="media-files/kanasound-pyo.mp3" aria-label="Play pyo"><span class="kj">ぴょ</span><span class="rj">pyo</span></button>
+</div></section>
+  <section id="p-meanings" class="panel"><h3 class="section-title">Particles &amp; What They Mean</h3>
+<p class="section-note">These single hiragana do double duty as grammar particles — tiny words that glue a Japanese sentence together. Click one to hear it.</p>
+<div class="particles"><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-no.mp3" aria-label="Play no">の<span class="p-romaji">no</span></button>
+  <div class="p-body">
+    <div class="p-meaning">Possession — works like 's or “of” in English.</div>
+    <div class="p-example">私（わたし）の本（ほん） <span class="p-romaji-ex">(watashi no hon)</span> — “my book”</div>
+  </div>
+</div><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-ha.mp3" aria-label="Play wa">は<span class="p-romaji">wa</span></button>
+  <div class="p-body">
+    <div class="p-meaning"> <span class="pron-note">(pronounced “wa”)</span>Topic marker — written は but read “wa” when used this way. Marks what the sentence is about.</div>
+    <div class="p-example">私は学生です <span class="p-romaji-ex">(watashi wa gakusei desu)</span> — “I am a student (lit. as for me, [I] am a student)”</div>
+  </div>
+</div><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-wo.mp3" aria-label="Play o">を<span class="p-romaji">o</span></button>
+  <div class="p-body">
+    <div class="p-meaning"> <span class="pron-note">(pronounced “o”)</span>Direct object marker — written を but read “o”. Marks the thing an action is done to.</div>
+    <div class="p-example">本を読む <span class="p-romaji-ex">(hon o yomu)</span> — “read a book”</div>
+  </div>
+</div><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-ni.mp3" aria-label="Play ni">に<span class="p-romaji">ni</span></button>
+  <div class="p-body">
+    <div class="p-meaning">Direction, target or time — “to / at / in / onto”.</div>
+    <div class="p-example">学校に行く <span class="p-romaji-ex">(gakkou ni iku)</span> — “go to school”</div>
+  </div>
+</div><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-de.mp3" aria-label="Play de">で<span class="p-romaji">de</span></button>
+  <div class="p-body">
+    <div class="p-meaning">Location of an action or the means used — “at / by / with”.</div>
+    <div class="p-example">図書館で勉強する <span class="p-romaji-ex">(toshokan de benkyou suru)</span> — “study at the library”</div>
+  </div>
+</div><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-to.mp3" aria-label="Play to">と<span class="p-romaji">to</span></button>
+  <div class="p-body">
+    <div class="p-meaning">“And” (joining nouns) or “with” (a companion).</div>
+    <div class="p-example">友達と行く <span class="p-romaji-ex">(tomodachi to iku)</span> — “go with a friend”</div>
+  </div>
+</div><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-mo.mp3" aria-label="Play mo">も<span class="p-romaji">mo</span></button>
+  <div class="p-body">
+    <div class="p-meaning">“Also / too” — replaces は or が on the word it follows.</div>
+    <div class="p-example">私も行く <span class="p-romaji-ex">(watashi mo iku)</span> — “I am going too”</div>
+  </div>
+</div><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-ka.mp3" aria-label="Play ka">か<span class="p-romaji">ka</span></button>
+  <div class="p-body">
+    <div class="p-meaning">Question marker — added to the end of a sentence to ask something.</div>
+    <div class="p-example">元気ですか <span class="p-romaji-ex">(genki desu ka)</span> — “Are you doing well?”</div>
+  </div>
+</div><div class="particle-row">
+  <button type="button" class="p-kana" data-audio="media-files/kanasound-ga.mp3" aria-label="Play ga">が<span class="p-romaji">ga</span></button>
+  <div class="p-body">
+    <div class="p-meaning">Subject marker — identifies who or what is doing something, or what exists/is liked.</div>
+    <div class="p-example">猫が好きです <span class="p-romaji-ex">(neko ga suki desu)</span> — “I like cats (lit. cats are likable)”</div>
+  </div>
+</div></div></section>
+  <section id="p-contrasts" class="panel"><h3 class="section-title">Sound Contrasts — Train Your Ear</h3>
+<p class="section-note">Japanese has real word pairs that differ only by a long vowel or a doubled consonant (small っ). Click each word and listen for the difference.</p>
+<div class="pairs"><div class="pair">
+  <div class="pair-note">short い vs. long いい</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-ie.mp3">
+      <span class="kj">いえ</span><span class="rj">ie</span>
+      <span class="pm">house / home (家)</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-iie.mp3">
+      <span class="kj">いいえ</span><span class="rj">iie</span>
+      <span class="pm">“no” (polite negation)</span>
+    </button>
+  </div>
+</div><div class="pair">
+  <div class="pair-note">short お vs. long おう</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-koko.mp3">
+      <span class="kj">ここ</span><span class="rj">koko</span>
+      <span class="pm">here (此処)</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-koukou.mp3">
+      <span class="kj">こうこう</span><span class="rj">koukou</span>
+      <span class="pm">high school (高校)</span>
+    </button>
+  </div>
+</div><div class="pair">
+  <div class="pair-note">short あ vs. long ああ</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-obasan.mp3">
+      <span class="kj">おばさん</span><span class="rj">obasan</span>
+      <span class="pm">aunt / a middle-aged woman</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-obaasan.mp3">
+      <span class="kj">おばあさん</span><span class="rj">obaasan</span>
+      <span class="pm">grandmother / an elderly woman</span>
+    </button>
+  </div>
+</div><div class="pair">
+  <div class="pair-note">short い vs. long いい</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-ojisan.mp3">
+      <span class="kj">おじさん</span><span class="rj">ojisan</span>
+      <span class="pm">uncle / a middle-aged man</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-ojiisan.mp3">
+      <span class="kj">おじいさん</span><span class="rj">ojiisan</span>
+      <span class="pm">grandfather / an elderly man</span>
+    </button>
+  </div>
+</div><div class="pair">
+  <div class="pair-note">short う vs. long うう</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-tsuchi.mp3">
+      <span class="kj">つち</span><span class="rj">tsuchi</span>
+      <span class="pm">soil / earth (土)</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-tsuuchi.mp3">
+      <span class="kj">つうち</span><span class="rj">tsuuchi</span>
+      <span class="pm">notification / notice (通知)</span>
+    </button>
+  </div>
+</div><div class="pair">
+  <div class="pair-note">single た vs. double っ+た</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-uta.mp3">
+      <span class="kj">うた</span><span class="rj">uta</span>
+      <span class="pm">song (歌)</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-utta.mp3">
+      <span class="kj">うった</span><span class="rj">utta</span>
+      <span class="pm">sold — past tense of 売る (うる)</span>
+    </button>
+  </div>
+</div><div class="pair">
+  <div class="pair-note">single て vs. double っ+て</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-kite.mp3">
+      <span class="kj">きて</span><span class="rj">kite</span>
+      <span class="pm">“come!” — polite request form of 来る (くる)</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-kitte.mp3">
+      <span class="kj">きって</span><span class="rj">kitte</span>
+      <span class="pm">postage stamp (切手)</span>
+    </button>
+  </div>
+</div><div class="pair">
+  <div class="pair-note">single こ vs. double っ+こ</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-kako.mp3">
+      <span class="kj">かこ</span><span class="rj">kako</span>
+      <span class="pm">the past (過去)</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-kakko.mp3">
+      <span class="kj">かっこ</span><span class="rj">kakko</span>
+      <span class="pm">brackets / parentheses (括弧)</span>
+    </button>
+  </div>
+</div><div class="pair">
+  <div class="pair-note">single し vs. double っ+し</div>
+  <div class="pair-items">
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-nishi.mp3">
+      <span class="kj">にし</span><span class="rj">nishi</span>
+      <span class="pm">west (西)</span>
+    </button>
+    <button type="button" class="pair-item" data-audio="media-files/kanasound-nisshi.mp3">
+      <span class="kj">にっし</span><span class="rj">nisshi</span>
+      <span class="pm">diary / log (日誌) — as in a captain&#x27;s log</span>
+    </button>
+  </div>
+</div></div></section>
+</main>
+<footer>
+  Audio clips from the <code>media-files</code> folder bundled alongside this page.
+</footer>
+<script>
+(function() {
+  var tabs = document.querySelectorAll('nav.tabs button');
+  var panels = document.querySelectorAll('.panel');
+  tabs.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      tabs.forEach(function(b) { b.classList.remove('active'); });
+      panels.forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.panel).classList.add('active');
+    });
+  });
+
+  var currentAudio = null, currentEl = null;
+  document.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-audio]');
+    if (!el) return;
+    var src = el.getAttribute('data-audio');
+    if (currentAudio) { currentAudio.pause(); }
+    if (currentEl) { currentEl.classList.remove('playing'); }
+    var audio = new Audio(src);
+    currentAudio = audio; currentEl = el;
+    el.classList.add('playing');
+    audio.addEventListener('ended', function() { el.classList.remove('playing'); });
+    audio.play().catch(function() {
+      el.classList.remove('playing');
+      el.classList.add('audio-error');
+      setTimeout(function() { el.classList.remove('audio-error'); }, 600);
+    });
+  });
+})();
+</script>
+</body>
+</html>
