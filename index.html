@@ -2,7 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fdf8f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1817" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kana Hub">
+<meta name="description" content="Learn Japanese hiragana and katakana: listen, watch the stroke order, and practice writing.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23b3272d'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='white'>あ</text></svg>">
 <title>Kana Study Hub — Hiragana &amp; Katakana</title>
 <style>
 :root{
@@ -29,11 +36,6 @@ header p{margin:4px 0 0;color:var(--muted);font-size:13px}
 .bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--kata));width:0;transition:width .3s}
 
 .sticky{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
-nav.modes{display:flex;justify-content:center;gap:0;padding:12px 12px 0}
-nav.modes button{border:1px solid var(--line);background:var(--card);padding:9px 20px;font-size:14px;font-weight:600;cursor:pointer}
-nav.modes button:first-child{border-radius:12px 0 0 12px}
-nav.modes button:last-child{border-radius:0 12px 12px 0;border-left:0}
-nav.modes button.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px 6px;justify-content:center;flex-wrap:wrap}
 nav.tabs button[hidden]{display:none}
 nav.tabs button{border:1px solid var(--line);background:var(--card);padding:7px 13px;border-radius:99px;font-size:13px;cursor:pointer;white-space:nowrap}
@@ -42,6 +44,8 @@ nav.tabs button.active{background:var(--accent);border-color:var(--accent);color
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:var(--card)}
 .seg button{border:0;background:transparent;padding:5px 11px;cursor:pointer;font-size:12px}
 .seg button.on{background:var(--ink);color:var(--paper)}
+.seg button{white-space:nowrap}
+.seg .sm{display:none}
 .toolbar label{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
 .toolbar select{font:inherit;padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .icon-btn{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 10px;cursor:pointer;font-size:12px}
@@ -110,39 +114,6 @@ body.hide-romaji .tile .r{visibility:hidden}
 .btn.good{background:var(--good-soft);border-color:var(--good);color:var(--good)}
 .btn:disabled{opacity:.5;cursor:default}
 
-/* quiz */
-.qbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:560px;margin:10px auto}
-.qsettings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;font-size:12px;margin-bottom:12px}
-.qsettings label{display:flex;flex-direction:column;gap:3px;color:var(--muted)}
-.qsettings select{font:inherit;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
-.stats{display:flex;justify-content:center;gap:18px;font-size:13px;color:var(--muted);margin-bottom:6px}
-.stats b{color:var(--ink);font-size:16px}
-.prompt{text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px}
-.prompt .big{font-size:72px;line-height:1.1}
-.prompt .big.rom{font-size:44px;font-weight:700}
-.prompt .hint{font-size:12px;color:var(--muted)}
-.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.choice{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:14px 6px;font-size:28px;cursor:pointer;position:relative}
-.choice.rom{font-size:20px;font-weight:600}
-.choice .kbd{position:absolute;top:4px;left:8px;font-size:10px;color:var(--muted)}
-.choice.right{background:var(--good-soft);border-color:var(--good);color:var(--good)}
-.choice.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
-.feedback{text-align:center;min-height:24px;margin-top:10px;font-size:14px}
-.missed{margin-top:14px;font-size:13px;color:var(--muted);text-align:center}
-.missed span{display:inline-block;margin:2px;padding:2px 8px;border-radius:99px;background:var(--bad-soft);color:var(--bad);cursor:pointer}
-
-/* flashcards */
-.flash{perspective:900px;max-width:320px;margin:14px auto}
-.fcard{position:relative;height:280px;transition:transform .45s;transform-style:preserve-3d;cursor:pointer}
-.fcard.flipped{transform:rotateY(180deg)}
-.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:18px;border:1px solid var(--line);background:var(--card);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;text-align:center}
-.face.back{transform:rotateY(180deg);background:var(--soft)}
-.face .big{font-size:110px;line-height:1}
-.face .rom{font-size:36px;font-weight:700}
-.face .sub{font-size:13px;color:var(--muted)}
-.fc-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
-
 /* lists */
 .list{display:flex;flex-direction:column;gap:10px}
 .row{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
@@ -154,22 +125,7 @@ body.hide-romaji .tile .r{visibility:hidden}
 .rb .m{font-weight:600;font-size:14px}
 .rb .x{color:var(--muted);font-size:13px;margin-top:2px}
 .rb .pn{color:var(--accent);font-weight:400;font-size:12px}
-.fill{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0}
-.fill .sent{font-size:22px;margin:6px 0}
-.fill .blank{display:inline-block;min-width:44px;border-bottom:2px solid var(--accent);text-align:center;color:var(--accent)}
-.fill .opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.fill .opts button{font-size:20px;padding:6px 14px}
 
-.pairs{display:flex;flex-direction:column;gap:10px}
-.pair{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--card)}
-.pair .pn{font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.pair .items{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.pi{display:flex;flex-direction:column;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--paper);cursor:pointer;text-align:left}
-.pi:hover{border-color:var(--accent)}
-.pi.playing{background:var(--accent-soft);border-color:var(--accent)}
-.pi.right{background:var(--good-soft);border-color:var(--good)}
-.pi.wrong{background:var(--bad-soft);border-color:var(--bad)}
-.pi .w{font-size:22px}.pi .wr{font-size:12px;color:var(--muted)}.pi .wm{font-size:13px;margin-top:4px}
 .mini{font-size:11px;padding:3px 9px;border-radius:99px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0}
 
 .tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
@@ -178,56 +134,141 @@ body.hide-romaji .tile .r{visibility:hidden}
 .tip .jp{font-size:18px}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 16px 30px}
 kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;font-size:11px}
-@media (max-width:520px){
-  nav.tabs{flex-wrap:nowrap;justify-content:flex-start}
-  .toolbar{padding-top:0}
-  .pair .items{grid-template-columns:1fr}
-  .tile{min-height:54px}
-  .prompt .big{font-size:60px}
+.tapmode{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 10px;margin:10px 0 0;font-size:13px;color:var(--muted)}
+.tapmode .seg button{padding:7px 12px;font-size:13px}
+.tap-hint{flex-basis:100%;text-align:center;margin:0;font-size:12px}
+.tap-hint[hidden]{display:none}
+.tile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.tile.pressing{transform:scale(.94);border-color:var(--accent)}
+/* ---------- touch & responsive ---------- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+button,select,label,.tile,.pk{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.side{padding-bottom:calc(30px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+.side-head{position:sticky;top:-14px;z-index:2;background:var(--card);margin:-14px -16px 0;padding:14px 16px 8px;border-bottom:1px solid var(--line)}
+footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+nav.tabs{scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+
+/* no hover effects stuck on touch screens */
+@media (hover:none){
+  .tile:hover,.rowbtn:hover{border-color:var(--line)}
+  .rowbtn:hover{color:var(--muted)}
+}
+
+/* tablets & small laptops */
+@media (max-width:900px){
+  .tips{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+}
+
+/* phones */
+@media (max-width:640px){
+  header{padding:14px 14px 6px;padding-top:calc(14px + env(safe-area-inset-top))}
+  header h1{font-size:22px;line-height:1.25}
+  header h1 span{display:block;font-size:15px;font-weight:500;color:var(--muted)}
+  header p{font-size:12px}
+
+  nav.tabs{flex-wrap:nowrap;justify-content:flex-start;padding:8px 12px 6px;scroll-snap-type:x proximity;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 24px),transparent);
+            mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 24px),transparent)}
+  nav.tabs button{scroll-snap-align:center;padding:8px 14px;flex:0 0 auto}
+  nav.tabs::after{content:"";flex:0 0 12px}
+
+  .toolbar{flex-wrap:nowrap;justify-content:space-between;gap:6px;padding:2px 12px 8px}
+  .toolbar .seg button{padding:7px 10px}
+  .toolbar .seg .lg{display:none}
+  .toolbar .seg .sm{display:inline}
+  .toolbar .lbl{display:none}
+  .toolbar label{white-space:nowrap}
+  .toolbar select{padding:5px 4px}
+  .icon-btn{padding:6px 10px}
+
+  main{padding:6px 12px 40px}
+  h2{font-size:17px;margin-top:16px}
+  .note{font-size:12.5px}
+
+  .tapmode{flex-direction:column;gap:6px}
+  .tapmode .seg{width:100%}
+  .tapmode .seg button{flex:1;padding:9px 6px}
+  .chart{gap:5px}
+  .tile{min-height:56px;border-radius:9px;padding:5px 1px}
+  .tile .r{font-size:10.5px}
+
+  .side{width:100vw;border-left:0;padding:14px 14px 30px}
+  .side-head{margin:-14px -14px 0;padding:14px 14px 8px}
+  .d-big .h,.d-big .k{font-size:40px}
+  .stroke-svg{width:min(220px,62vw);height:min(220px,62vw)}
+  .stroke-svg.wide{width:100%;height:auto}
+  .pad-wrap{max-width:min(300px,78vw)}
+  .stroke-ctl .btn{padding:9px 12px}
+
+
+
+  .row{gap:10px;padding:10px 12px}
+  .pk{min-width:50px;height:50px;font-size:22px}
+
+
+  .tips{grid-template-columns:1fr;gap:8px}
+  .tip{padding:11px 12px}
+}
+
+/* very small phones */
+@media (max-width:360px){
+  .toolbar{flex-wrap:wrap;justify-content:center}
+  .seg button{padding:6px 7px;font-size:11.5px}
+  .tile .h,.tile .k{font-size:17px}
+  .tile.both .h,.tile.both .k{font-size:14px}
+  .chart{gap:4px}
+}
+
+/* phones held sideways: don't let the sticky bar eat the screen */
+@media (max-height:500px) and (orientation:landscape){
+  .sticky{position:static}
+  header{padding-top:10px}
+  .side{width:min(420px,70vw)}
 }
 </style>
 </head>
 <body>
 <header>
   <h1>Kana Study Hub <span lang="ja">ひらがな・カタカナ</span></h1>
-  <p>Click any character to hear it, see how to write it, and get example words. Keep this file next to the <code>media-files</code> folder for audio.</p>
+  <p>Tap any character to hear it, see how to write it, and get example words.</p>
 </header>
 
 <div class="sticky">
-  <nav class="modes" id="modes">
-    <button data-m="learn">📖 Learn</button>
-    <button data-m="practice">🎯 Practice &amp; Test</button>
-  </nav>
   <nav class="tabs" id="tabs">
     <button data-m="learn" data-p="chart">Kana Chart</button>
     <button data-m="learn" data-p="tips">Rules &amp; Tips</button>
     <button data-m="learn" data-p="particles">Particles</button>
-    <button data-m="learn" data-p="loan">Loanwords</button>
-    <button data-m="learn" data-p="contrast">Sound Contrasts</button>
-    <button data-m="practice" data-p="quiz">Kana Quiz</button>
-    <button data-m="practice" data-p="flash">Flashcards</button>
-    <button data-m="practice" data-p="fillq">Particle Quiz</button>
-    <button data-m="practice" data-p="listen">Listening Test</button>
   </nav>
   <div class="toolbar">
     <div class="seg" id="scriptSeg">
-      <button data-s="h" class="on">ひ Hiragana</button>
-      <button data-s="k">カ Katakana</button>
+      <button data-s="h" class="on"><span class="lg">ひ Hiragana</span><span class="sm">Hira</span></button>
+      <button data-s="k"><span class="lg">カ Katakana</span><span class="sm">Kata</span></button>
       <button data-s="b">Both</button>
     </div>
     <label><input type="checkbox" id="hideRomaji"> Hide romaji</label>
-    <label>Speed
-      <select id="speed"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option></select>
+    <label><span class="lbl">Speed</span>
+      <select id="speed" aria-label="Audio speed"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option></select>
     </label>
-    <button class="icon-btn" id="themeBtn" title="Toggle dark mode">◐ Theme</button>
+    <button class="icon-btn" id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">◐<span class="lbl"> Theme</span></button>
   </div>
 </div>
 
 <main>
 <!-- CHART -->
 <section class="panel" id="p-chart">
+  <div class="tapmode">
+    <span class="tapmode-l">When I tap a character:</span>
+    <div class="seg" id="tapSeg" role="group" aria-label="What happens when you tap a character">
+      <button type="button" data-t="sound">🔊 Just play sound</button>
+      <button type="button" data-t="details">✍️ Sound + writing</button>
+    </div>
+    <p class="tap-hint" id="tapHint"></p>
+  </div>
   <h2>Basic Sounds — Gojūon (五十音)</h2>
-  <p class="note">46 core sounds. Click a tile for its sound and an example word. Use the ▶ button at the start of a row to hear the whole row.</p>
+  <p class="note">46 core sounds. Tap a tile to hear it. Use the ▶ button at the start of a row to hear the whole row.</p>
   <div class="chart" id="chart-basic"></div>
 
   <h2>Voiced Sounds — Dakuten &amp; Handakuten (濁音・半濁音)</h2>
@@ -239,116 +280,11 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
   <div class="chart" id="chart-combo"></div>
 </section>
 
-<!-- QUIZ -->
-<section class="panel" id="p-quiz">
-  <h2>Quiz</h2>
-  <p class="note">Pick the right answer. Keys <kbd>1</kbd>–<kbd>4</kbd> to answer, <kbd>R</kbd> to replay sound, <kbd>Enter</kbd> for next.</p>
-  <div class="qbox">
-    <div class="qsettings">
-      <label>Mode
-        <select id="qMode">
-          <option value="listen">🔊 Listen → pick kana</option>
-          <option value="read">👀 See kana → pick romaji</option>
-          <option value="write">✍ See romaji → pick kana</option>
-          <option value="match">🔁 Hiragana → pick Katakana</option>
-        </select>
-      </label>
-      <label>Set
-        <select id="qSet">
-          <option value="basic">Basic (46)</option>
-          <option value="voiced">Voiced (25)</option>
-          <option value="combo">Combined (33)</option>
-          <option value="all">Everything</option>
-          <option value="weak">My missed ones</option>
-        </select>
-      </label>
-      <label>Script
-        <select id="qScript"><option value="h">Hiragana</option><option value="k">Katakana</option><option value="mix">Mixed</option></select>
-      </label>
-    </div>
-    <div class="stats">
-      <div>Score <b id="qScore">0/0</b></div>
-      <div>Streak <b id="qStreak">0</b></div>
-      <div>Best <b id="qBest">0</b></div>
-    </div>
-    <div class="prompt" id="qPrompt"></div>
-    <div class="choices" id="qChoices"></div>
-    <div class="feedback" id="qFeedback"></div>
-    <div style="text-align:center;margin-top:8px">
-      <button class="btn" id="qReplay">🔊 Replay</button>
-      <button class="btn primary" id="qNext">Next →</button>
-      <button class="btn" id="qReset">Reset score</button>
-    </div>
-    <div class="missed" id="qMissed"></div>
-  </div>
-</section>
-
-<!-- FLASHCARDS -->
-<section class="panel" id="p-flash">
-  <h2>Flashcards</h2>
-  <p class="note">Click the card (or press <kbd>Space</kbd>) to flip; <kbd>→</kbd> = Got it, <kbd>←</kbd> = Again. "Got it" removes the card from this round; "Again" puts it back a few cards later. Uses the script chosen in the toolbar.</p>
-  <div style="text-align:center;font-size:12px;color:var(--muted)">
-    Deck:
-    <select id="fSet" style="font:inherit;padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)">
-      <option value="basic">Basic</option><option value="voiced">Voiced</option><option value="combo">Combined</option><option value="all">Everything</option>
-    </select>
-    · <span id="fCount"></span>
-  </div>
-  <div class="flash"><div class="fcard" id="fCard">
-    <div class="face front"><div class="big" id="fFront"></div><div class="sub">tap to flip</div></div>
-    <div class="face back"><div class="rom" id="fRom"></div><div class="big" style="font-size:54px" id="fBoth"></div><div class="sub" id="fEx"></div></div>
-  </div></div>
-  <div class="fc-controls">
-    <button class="btn" id="fPlay">🔊 Play</button>
-    <button class="btn" id="fAgain">↺ Again</button>
-    <button class="btn good" id="fGot">✓ Got it</button>
-    <button class="btn" id="fShuffle">Shuffle</button>
-  </div>
-</section>
-
 <!-- PARTICLES -->
 <section class="panel" id="p-particles">
   <h2>Particles &amp; What They Mean</h2>
   <p class="note">Some hiragana double as grammar particles — tiny words that follow a noun and show its role in the sentence. Particles are always written in hiragana, never katakana.</p>
   <div class="list" id="particleList"></div>
-</section>
-
-<!-- PARTICLE QUIZ -->
-<section class="panel" id="p-fillq">
-  <h2>Particle Quiz</h2>
-  <p class="note">Choose the particle that completes the sentence. Review them in <b>Learn → Particles</b> first.</p>
-  <div class="fill" id="fillBox"></div>
-</section>
-
-<!-- LISTENING TEST -->
-<section class="panel" id="p-listen">
-  <h2>Listening Test</h2>
-  <p class="note">You’ll hear one word from a pair that differs only by a long vowel or a small っ. Pick the one you heard. Keys <kbd>1</kbd>/<kbd>2</kbd> to answer, <kbd>R</kbd> to replay, <kbd>Enter</kbd> for next.</p>
-  <div class="qbox">
-    <div class="stats"><div>Score <b id="lScore">0/0</b></div><div>Streak <b id="lStreak">0</b></div></div>
-    <div class="prompt"><div class="big">🎧</div><div class="hint" id="lHint">Which word did you hear?</div></div>
-    <div class="pair" style="border:0;padding:0;background:transparent"><div class="items" id="lChoices"></div></div>
-    <div class="feedback" id="lFeedback"></div>
-    <div style="text-align:center;margin-top:8px">
-      <button class="btn" id="lReplay">🔊 Replay</button>
-      <button class="btn primary" id="lNext">Next →</button>
-    </div>
-  </div>
-</section>
-
-<!-- LOANWORDS -->
-<section class="panel" id="p-loan">
-  <h2>Katakana Loanwords</h2>
-  <p class="note">Katakana is mainly used for foreign words, foreign names, and sound effects. A long dash ー stretches the vowel before it. (No audio clips for these whole words — try sounding them out using the chart.)</p>
-  <div style="text-align:center;margin-bottom:10px"><label style="font-size:13px"><input type="checkbox" id="loanHide"> Hide meanings (guess first, click to reveal)</label></div>
-  <div class="list" id="loanList"></div>
-</section>
-
-<!-- CONTRASTS -->
-<section class="panel" id="p-contrast">
-  <h2>Sound Contrasts — Train Your Ear</h2>
-  <p class="note">These real word pairs differ only by a long vowel or a doubled consonant (small っ). Click a word to hear it. When you’re ready, test your ear in <b>Practice &amp; Test → Listening Test</b>.</p>
-  <div class="pairs" id="pairList"></div>
 </section>
 
 <!-- TIPS -->
@@ -360,14 +296,15 @@ kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;bor
   <h2 style="font-size:15px;margin-top:20px">Reading & pronunciation rules</h2>
   <div class="tips"><div class="tip"><h4>One kana = one beat</h4>Japanese is timed by beats (mora). <span class="jp">とうきょう</span> (Tōkyō) is 4 beats: to·u·kyo·u. Small ゃ/ゅ/ょ join the previous beat; っ, ん and long vowels each take a full beat.</div><div class="tip"><h4>Small っ / ッ (sokuon)</h4><span class="jp">きって</span> kitte — a small tsu is a one-beat pause that doubles the next consonant. Compare <span class="jp">きて</span> kite. In katakana: <span class="jp">ベッド</span> beddo.</div><div class="tip"><h4>Long vowels in hiragana</h4>Add a vowel: <span class="jp">おばあさん</span> obaasan, <span class="jp">おじいさん</span> ojiisan. o-sounds usually take う (<span class="jp">こうこう</span> kōkō), sometimes お (<span class="jp">おおきい</span> ōkii). e-sounds often take い (<span class="jp">せんせい</span> sensei).</div><div class="tip"><h4>Long vowels in katakana</h4>Use the dash ー: <span class="jp">コーヒー</span> kōhī, <span class="jp">ケーキ</span> kēki. In vertical text the dash is written vertically.</div><div class="tip"><h4>は / へ / を as particles</h4>は is read <b>wa</b>, へ is read <b>e</b>, を is read <b>o</b> when they are particles. <span class="jp">わたしは</span> watashi wa, <span class="jp">にほんへ</span> nihon e.</div><div class="tip"><h4>ん changes with the next sound</h4>Sounds like “m” before m/b/p (<span class="jp">さんぽ</span> sanpo), like “ng” before k/g (<span class="jp">りんご</span> ringo). Always one full beat: <span class="jp">ほん</span> = ho·n.</div><div class="tip"><h4>Whispered vowels</h4>i and u often go quiet between voiceless consonants or at the end: <span class="jp">です</span> sounds like “dess”, <span class="jp">すき</span> like “ski”.</div><div class="tip"><h4>Pitch, not stress</h4>Japanese uses high/low pitch. In Tokyo speech <span class="jp">はし</span> HA-shi (high-low) = chopsticks, ha-SHI (low-high) = bridge. Context usually makes it clear.</div><div class="tip"><h4>ぢ・づ</h4>Sound the same as じ (ji) and ず (zu). じ/ず are the normal spellings; ぢ/づ appear mainly when ち/つ becomes voiced in a compound (はな + ち → はなぢ) or after the same sound (つづく).</div><div class="tip"><h4>The r sound</h4>Japanese r is a light tongue tap — somewhere between English r, l and d. Don’t curl the tongue.</div></div>
   <h2 style="font-size:15px;margin-top:20px">Writing rules</h2>
-  <div class="tips"><div class="tip"><h4>Basic stroke order</h4>Top → bottom, left → right. A horizontal line usually comes before the vertical that crosses it (<span class="jp">た</span>, <span class="jp">す</span>, <span class="jp">せ</span>). Click any tile to watch the animation.</div><div class="tip"><h4>Small kana</h4>ゃ ゅ ょ っ (ャ ュ ョ ッ) are written about half size, sitting low in their square.</div><div class="tip"><h4>Dakuten ゛ and handakuten ゜</h4>Always go at the top-right, written last: <span class="jp">か → が</span>, <span class="jp">は → ば → ぱ</span>.</div><div class="tip"><h4>Hiragana vs katakana feel</h4>Hiragana are round and flowing; katakana are straight and angular. Keep katakana strokes crisp and short.</div><div class="tip"><h4>Extra katakana for foreign sounds</h4>Small ァィゥェォ build sounds Japanese doesn’t have: <span class="jp">ファン</span> fan, <span class="jp">パーティー</span> pātī (party), <span class="jp">ディズニー</span> Dizunī, <span class="jp">シェフ</span> shefu (chef), <span class="jp">ウェブ</span> webu (web).</div><div class="tip"><h4>Practice tip</h4>Say the sound out loud each time you write it. Use the practice pad with the guide on, then turn the guide off and try from memory.</div></div>
+  <div class="tips"><div class="tip"><h4>Basic stroke order</h4>Top → bottom, left → right. A horizontal line usually comes before the vertical that crosses it (<span class="jp">た</span>, <span class="jp">す</span>, <span class="jp">せ</span>). Tap any tile to watch the animation.</div><div class="tip"><h4>Small kana</h4>ゃ ゅ ょ っ (ャ ュ ョ ッ) are written about half size, sitting low in their square.</div><div class="tip"><h4>Dakuten ゛ and handakuten ゜</h4>Always go at the top-right, written last: <span class="jp">か → が</span>, <span class="jp">は → ば → ぱ</span>.</div><div class="tip"><h4>Hiragana vs katakana feel</h4>Hiragana are round and flowing; katakana are straight and angular. Keep katakana strokes crisp and short.</div><div class="tip"><h4>Extra katakana for foreign sounds</h4>Small ァィゥェォ build sounds Japanese doesn’t have: <span class="jp">ファン</span> fan, <span class="jp">パーティー</span> pātī (party), <span class="jp">ディズニー</span> Dizunī, <span class="jp">シェフ</span> shefu (chef), <span class="jp">ウェブ</span> webu (web).</div><div class="tip"><h4>Practice tip</h4>Say the sound out loud each time you write it. Use the practice pad with the guide on, then turn the guide off and try from memory.</div></div>
   <h2 style="font-size:15px;margin-top:20px">Look-alikes to watch</h2>
   <div class="tips"><div class="tip"><h4>シ vs ツ</h4><b>シ</b> (shi): short strokes stacked on the left, long stroke sweeps <i>up</i>. <b>ツ</b> (tsu): short strokes along the top, long stroke sweeps <i>down</i>.</div><div class="tip"><h4>ソ vs ン</h4><b>ソ</b> (so): short stroke upright, long stroke sweeps <i>down</i>. <b>ン</b> (n): short stroke flatter, long stroke sweeps <i>up</i>.</div><div class="tip"><h4>ク / ケ / タ</h4><b>ケ</b> has a horizontal line reaching out to the right. <b>タ</b> has an extra small stroke inside. <b>ク</b> has neither.</div><div class="tip"><h4>ウ / ワ / フ</h4><b>ウ</b> has a small tick on top. <b>ワ</b> has the left vertical but no tick. <b>フ</b> is a single stroke.</div><div class="tip"><h4>コ / ユ,  ノ / メ,  ヌ / ス</h4><b>ユ</b>’s bottom line sticks out past the side. <b>メ</b> is ノ with a crossing stroke. <b>ヌ</b> is like ス with an extra crossing stroke.</div><div class="tip"><h4>チ vs テ</h4><b>チ</b> starts with a slanted stroke on top. <b>テ</b> has two straight horizontal lines on top.</div><div class="tip"><h4>ぬ / め,  る / ろ</h4><b>ぬ</b> and <b>る</b> end with a small loop. <b>め</b> and <b>ろ</b> don’t.</div><div class="tip"><h4>れ / わ / ね</h4>All share the same left part. <b>ね</b> ends in a loop, <b>れ</b> ends with a kick outward, <b>わ</b> ends with a smooth inward curve.</div><div class="tip"><h4>は / ほ,  き / さ</h4><b>ほ</b> has two horizontal lines on the right, <b>は</b> has one. <b>き</b> has two horizontal lines, <b>さ</b> has one.</div><div class="tip"><h4>あ / お,  い / り</h4><b>お</b> has a separate dot on the right. <b>り</b>’s right stroke is long and drops down; <b>い</b>’s right stroke is short.</div><div class="tip"><h4>Katakana vs kanji twins</h4>カ/力 (power), エ/工 (craft), ニ/二 (two), ハ/八 (eight), ロ/口 (mouth) look almost identical — the surrounding words tell you which it is.</div></div>
   <h2 style="font-size:15px;margin-top:20px">Study tips</h2>
-  <div class="tips"><div class="tip"><h4>Learn in rows</h4>Follow the chart order a·i·u·e·o, then ka, sa, ta, na, ha, ma, ya, ra, wa. This is also dictionary order (gojūon).</div><div class="tip"><h4>Hiragana first</h4>Get comfortable with hiragana before katakana — the sounds are identical, so katakana goes faster afterwards.</div><div class="tip"><h4>Short, daily sessions</h4>10–15 minutes a day beats one long session. Use Practice → Flashcards and press “Again” on the ones you miss.</div><div class="tip"><h4>Hide the romaji</h4>Turn on “Hide romaji” in the toolbar as soon as you can. Romaji is a crutch; reading kana directly builds speed.</div><div class="tip"><h4>Drill your mistakes</h4>The Quiz remembers what you missed — choose “My missed ones” to review just those.</div><div class="tip"><h4>Read real words</h4>Look at the example words in the side panel and try reading packaging, menus, or signs. Katakana menus are great practice.</div></div>
+  <div class="tips"><div class="tip"><h4>Learn in rows</h4>Follow the chart order a·i·u·e·o, then ka, sa, ta, na, ha, ma, ya, ra, wa. This is also dictionary order (gojūon).</div><div class="tip"><h4>Hiragana first</h4>Get comfortable with hiragana before katakana — the sounds are identical, so katakana goes faster afterwards.</div><div class="tip"><h4>Short, daily sessions</h4>10–15 minutes a day beats one long session. Go through one row of the chart at a time and say each sound out loud.</div><div class="tip"><h4>Hide the romaji</h4>Turn on “Hide romaji” in the toolbar as soon as you can. Romaji is a crutch; reading kana directly builds speed.</div><div class="tip"><h4>Read real words</h4>Look at the example words in the side panel and try reading packaging, menus, or signs. Katakana menus are great practice.</div></div>
 </section>
 </main>
 
+<footer>Your settings and open tab are saved in this browser.<br>Stroke-order data from <a href="https://kanjivg.tagaini.net" style="color:var(--accent)">KanjiVG</a> © Ulrich Apel, licensed <a href="https://creativecommons.org/licenses/by-sa/3.0/" style="color:var(--accent)">CC BY-SA 3.0</a>.</footer>
 
 <aside class="side" id="side" aria-label="Character details">
   <div class="side-head">
@@ -593,52 +530,13 @@ var PARTICLES = [
  ['まで','made',['ma','de'],'“Until / as far as”.','えきまであるきます','eki made arukimasu','I walk to the station.']
 ];
 
-var FILL = [
- ['わたし','がくせいです','I am a student.',['は','を','に'],'は'],
- ['ほん','よみます','I read a book.',['に','を','で'],'を'],
- ['わたし','ほん','my book',['を','で','の'],'の'],
- ['がっこう','いきます','I go to school.',['を','に','の'],'に'],
- ['としょかん','べんきょうします','I study at the library.',['で','を','の'],'で'],
- ['ねこ','すきです','I like cats.',['で','が','の'],'が'],
- ['わたし','いきます','I am going too.',['を','で','も'],'も'],
- ['げんきです','','Are you well?',['か','を','の'],'か'],
- ['ともだち','いきます','I go with a friend.',['を','と','の'],'と'],
- ['とうきょう','きました','I came from Tokyo.',['まで','から','を'],'から'],
- ['えき','あるきます','I walk as far as the station.',['まで','から','が'],'まで']
-];
-
-var PAIRS = [
- [['いえ','ie','house / home'],['いいえ','iie','“no” (polite)'],'short い vs. long いい'],
- [['ここ','koko','here'],['こうこう','koukou','high school'],'short お vs. long おう'],
- [['おばさん','obasan','aunt / middle-aged woman'],['おばあさん','obaasan','grandmother / elderly woman'],'short あ vs. long ああ'],
- [['おじさん','ojisan','uncle / middle-aged man'],['おじいさん','ojiisan','grandfather / elderly man'],'short い vs. long いい'],
- [['つち','tsuchi','soil / earth'],['つうち','tsuuchi','notification'],'short う vs. long うう'],
- [['うた','uta','song'],['うった','utta','sold (past of うる, to sell)'],'た vs. small っ + た'],
- [['きて','kite','come! (request form of くる)'],['きって','kitte','postage stamp'],'て vs. small っ + て'],
- [['かこ','kako','the past'],['かっこ','kakko','brackets / parentheses'],'こ vs. small っ + こ'],
- [['にし','nishi','west'],['にっし','nisshi','diary / log (日誌)'],'し vs. small っ + し']
-];
-
-var LOANS = [
- ['コーヒー','kōhī','coffee'],['テレビ','terebi','television'],['パン','pan','bread (from Portuguese)'],['タクシー','takushī','taxi'],
- ['アイスクリーム','aisukurīmu','ice cream'],['カメラ','kamera','camera'],['ホテル','hoteru','hotel'],['レストラン','resutoran','restaurant'],
- ['バス','basu','bus'],['ノート','nōto','notebook'],['コンビニ','konbini','convenience store'],['スマホ','sumaho','smartphone'],
- ['パソコン','pasokon','personal computer'],['エレベーター','erebētā','elevator'],['トイレ','toire','toilet / restroom'],['ビール','bīru','beer'],
- ['ジュース','jūsu','juice'],['チョコレート','chokorēto','chocolate'],['ゲーム','gēmu','game'],['ボールペン','bōrupen','ballpoint pen'],
- ['アルバイト','arubaito','part-time job (from German “Arbeit”)'],['アメリカ','amerika','America'],['タイ','tai','Thailand'],['バンコク','bankoku','Bangkok']
-];
-
-var LOOKALIKE = [['シ','ツ'],['ソ','ン'],['ウ','ワ','フ'],['ク','ケ','タ'],['コ','ユ'],['チ','テ'],['ノ','メ'],['マ','ア'],['ヌ','ス'],
-  ['さ','ち'],['ぬ','め'],['れ','わ','ね'],['は','ほ'],['る','ろ'],['い','り'],['あ','お'],['き','さ'],['ぬ','ね']];
-var SAME_SOUND = [['o','wo']];
-
 /* ---------- state ---------- */
 var state = {
   script: store.get('script','h'),
   hide: store.get('hide',false),
   speed: store.get('speed',1),
+  tap: store.get('tap', (window.matchMedia && matchMedia('(max-width:640px)').matches) ? 'sound' : 'details'),
   theme: store.get('theme',null),
-  missed: store.get('missed',{}),     // "h:あ" -> count
   best: store.get('best',0)
 };
 
@@ -672,6 +570,7 @@ function applyTheme(){
   var t = state.theme;
   if(!t){ t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; }
   document.documentElement.setAttribute('data-theme', t);
+  $$('meta[name="theme-color"]').forEach(function(m){ m.setAttribute('content', t==='dark' ? '#1b1817' : '#fdf8f2'); });
 }
 applyTheme();
 $('#themeBtn').onclick = function(){
@@ -683,7 +582,7 @@ $$('#scriptSeg button').forEach(function(b){
   b.onclick = function(){
     state.script = b.dataset.s; store.set('script',state.script);
     $$('#scriptSeg button').forEach(function(x){ x.classList.toggle('on', x===b); });
-    renderCharts(); buildDeck();
+    renderCharts();
   };
 });
 $('#hideRomaji').checked = state.hide;
@@ -692,15 +591,14 @@ $('#hideRomaji').onchange = function(e){ state.hide = e.target.checked; store.se
 $('#speed').value = String(state.speed);
 $('#speed').onchange = function(e){ state.speed = +e.target.value; store.set('speed',state.speed); };
 
-/* ---------- modes & tabs (remembered across reloads) ---------- */
-var DEFAULT_TAB = { learn:'chart', practice:'quiz' };
-var activeMode = store.get('mode','learn');
+/* ---------- tabs (remembered across reloads) ---------- */
+var DEFAULT_TAB = { learn:'chart' };
+var activeMode = 'learn';
 var lastTab = store.get('lastTab', DEFAULT_TAB);
 if(!DEFAULT_TAB[activeMode]) activeMode = 'learn';
 var activePanel = null;
 function selectMode(m){
   activeMode = m; store.set('mode', m);
-  $$('#modes button').forEach(function(x){ x.classList.toggle('active', x.dataset.m===m); });
   $$('#tabs button').forEach(function(x){ x.hidden = x.dataset.m!==m; });
   var want = lastTab[m];
   if(!$('#tabs button[data-m="'+m+'"][data-p="'+want+'"]')) want = DEFAULT_TAB[m];
@@ -709,14 +607,20 @@ function selectMode(m){
 function selectTab(p){
   $$('#tabs button').forEach(function(x){ x.classList.toggle('active', x.dataset.p===p); });
   $$('.panel').forEach(function(x){ x.classList.toggle('active', x.id==='p-'+p); });
+  var changed = activePanel && activePanel!==p;
   activePanel = p;
   lastTab[activeMode] = p; store.set('lastTab', lastTab);
+  var tb = $('#tabs button.active'), tn = $('#tabs');
+  if(tb && tn.scrollWidth > tn.clientWidth){
+    tn.scrollTo({ left: tb.offsetLeft - (tn.clientWidth - tb.offsetWidth)/2, behavior: changed ? 'smooth' : 'auto' });
+  }
+  if(changed){
+    var mainTop = $('main').getBoundingClientRect().top + window.scrollY - $('.sticky').offsetHeight;
+    if(window.scrollY > mainTop) window.scrollTo({ top: mainTop, behavior: 'auto' });
+  }
   if(p!=='chart') closeDrawer();
   stopAudio();
-  if(p==='quiz' && !quiz.q) nextQ();
-  if(p==='listen' && !lt.q) nextListen();
 }
-$$('#modes button').forEach(function(b){ b.onclick = function(){ if(b.dataset.m!==activeMode) selectMode(b.dataset.m); }; });
 $$('#tabs button').forEach(function(b){ b.onclick = function(){ selectTab(b.dataset.p); }; });
 
 function scriptsInUse(){ return state.script==='b' ? ['h','k'] : [state.script]; }
@@ -752,12 +656,46 @@ function renderCharts(){
   renderChart($('#chart-combo'), COMBO, 3);
   if(drawerItem) markSelected(drawerItem);
 }
+function applyTapMode(){
+  $$('#tapSeg button').forEach(function(b){ b.classList.toggle('on', b.dataset.t===state.tap); });
+  $('#tapHint').hidden = state.tap!=='sound';
+}
+$$('#tapSeg button').forEach(function(b){
+  b.onclick = function(){ state.tap = b.dataset.t; store.set('tap', state.tap); applyTapMode(); };
+});
+applyTapMode();
+
+var press = { timer:null, tile:null, fired:false, x:0, y:0 };
+function cancelPress(){ clearTimeout(press.timer); if(press.tile) press.tile.classList.remove('pressing'); press.tile = null; }
+document.addEventListener('pointerdown', function(e){
+  var t = e.target.closest('.tile[data-id]');
+  if(!t) return;
+  cancelPress(); press.fired = false; press.tile = t; press.x = e.clientX; press.y = e.clientY;
+  press.timer = setTimeout(function(){
+    if(!press.tile) return;
+    press.fired = true;
+    var it = BY_ID[t.dataset.id];
+    t.classList.remove('pressing');
+    if(navigator.vibrate) try{ navigator.vibrate(15); }catch(_){}
+    play(it.a, t);
+    openDrawer(it);
+    press.tile = null;
+  }, 500);
+  setTimeout(function(){ if(press.tile===t) t.classList.add('pressing'); }, 150);
+});
+document.addEventListener('pointermove', function(e){
+  if(press.tile && (Math.abs(e.clientX-press.x)>10 || Math.abs(e.clientY-press.y)>10)) cancelPress();
+});
+['pointerup','pointercancel'].forEach(function(ev){ document.addEventListener(ev, cancelPress); });
+document.addEventListener('contextmenu', function(e){ if(e.target.closest('.tile[data-id]')) e.preventDefault(); });
+
 document.addEventListener('click', function(e){
   var t = e.target.closest('.tile[data-id]');
   if(!t) return;
+  if(press.fired){ press.fired = false; return; }   // long-press already handled it
   var it = BY_ID[t.dataset.id];
   play(it.a, t);
-  openDrawer(it);
+  if(state.tap==='details' || drawerItem) openDrawer(it);
 });
 
 /* ---------- side panel ---------- */
@@ -789,7 +727,7 @@ function usageHTML(it){
   if(it.dup) out += '<div class="usage"><div class="usage-t">Rare spelling</div>Sounds the same as '+(it.r==='ji'?'じ':'ず')+'. Used mainly when つ/ち gets voiced inside a compound word, or after the same sound (つづく, ちぢむ).</div>';
   if(it.h.length>1) out += '<div class="usage"><div class="usage-t">How it’s built</div>'+it.h[0]+' ('+BY_ID[it.h[0]].r+') + small '+it.h[1]+' → one beat: <b>'+it.r+'</b>. Write the small kana about half size, in the lower-left of its square.</div>';
   if(it.h==='ん') out += '<div class="usage"><div class="usage-t">Sound changes</div>ん sounds like “m” before m/b/p (さんぽ sanpo, しんぶん shinbun) and like “ng” before k/g (りんご ringo). It always counts as a full beat.</div>';
-  if(it.h==='つ') out += '<div class="usage"><div class="usage-t">Small っ</div>Written small, っ doubles the next consonant: きって (kitte), がっこう (gakkou). See the Sound Contrasts tab.</div>';
+  if(it.h==='つ') out += '<div class="usage"><div class="usage-t">Small っ</div>Written small, っ doubles the next consonant: きって (kitte), がっこう (gakkou).</div>';
   if(it.h==='う') out += '<div class="usage"><div class="usage-t">Long vowel</div>After an o-sound, う usually just lengthens it: こうこう (kōkō), とうきょう (Tōkyō).</div>';
   if(it.h==='ふ') out += '<div class="usage"><div class="usage-t">Pronunciation</div>A soft sound between “f” and “h” — blow gently without touching your lips to your teeth.</div>';
   if(it.r[0]==='r' && it.h.length===1) out += '<div class="usage"><div class="usage-t">The Japanese “r”</div>A light tap of the tongue, between English r, l and d.</div>';
@@ -971,163 +909,6 @@ $('#padUndo').onclick = function(){ padHistory.pop(); redrawPad(); };
 $('#padGuideOn').onchange = function(e){ $('#padGuide').style.visibility = e.target.checked ? '' : 'hidden'; };
 window.addEventListener('resize', function(){ if(drawerItem) sizePad(); });
 
-/* ---------- quiz ---------- */
-var quiz = { q:null, answered:false, right:0, total:0, streak:0 };
-$('#qBest').textContent = state.best;
-function sameSound(a,b){
-  if(a.a===b.a) return true;
-  return SAME_SOUND.some(function(g){ return g.indexOf(a.a)>=0 && g.indexOf(b.a)>=0; });
-}
-function quizPool(){
-  var set = $('#qSet').value;
-  var pool;
-  if(set==='weak'){
-    pool = Object.keys(state.missed).map(function(k){ return BY_ID[k.slice(2)]; }).filter(Boolean);
-    pool = pool.filter(function(v,i){ return pool.indexOf(v)===i; });
-  } else pool = SETS[set];
-  return pool.filter(function(it){ return !it.dup; });
-}
-function lookalikesOf(ch){
-  var out = [];
-  LOOKALIKE.forEach(function(g){ if(g.indexOf(ch)>=0) g.forEach(function(x){ if(x!==ch && out.indexOf(x)<0) out.push(x); }); });
-  return out;
-}
-function nextQ(){
-  var mode = $('#qMode').value;
-  var pool = quizPool();
-  var box = $('#qPrompt'), ch = $('#qChoices'), fb = $('#qFeedback');
-  fb.textContent = ''; quiz.answered = false;
-  if(pool.length===0){
-    box.innerHTML = '<div class="hint">No missed characters yet — great job! Pick another set.</div>';
-    ch.innerHTML = ''; quiz.q = null; return;
-  }
-  var ans = pick(pool);
-  var scr = $('#qScript').value; if(scr==='mix') scr = pick(['h','k']);
-  if(mode==='match') scr = 'k';
-  var distractPool = (pool.length>=6 ? pool : SETS.all.filter(function(x){ return !x.dup; }));
-  var opts = [ans];
-  // one look-alike distractor half the time (visual modes)
-  if(mode!=='read' && Math.random()<0.6){
-    var shown = scr==='h' ? ans.h : ans.k;
-    var la = lookalikesOf(shown).map(function(c){ return BY_ID[c] || BY_ID[String.fromCharCode(c.charCodeAt(0)-0x60)]; })
-      .filter(function(x){ return x && !x.dup && !sameSound(x,ans); });
-    if(la.length) opts.push(pick(la));
-  }
-  shuffle(distractPool).forEach(function(x){
-    if(opts.length>=4) return;
-    if(opts.indexOf(x)>=0) return;
-    if(opts.some(function(o){ return sameSound(o,x) || o.r===x.r; })) return;
-    opts.push(x);
-  });
-  opts = shuffle(opts);
-  quiz.q = { ans:ans, scr:scr, mode:mode, opts:opts };
-  var show = function(it){ return scr==='h' ? it.h : it.k; };
-  if(mode==='listen'){
-    box.innerHTML = '<div class="big">🔊</div><div class="hint">Which character did you hear?</div>';
-    setTimeout(function(){ play(ans.a); }, 150);
-  } else if(mode==='read'){
-    box.innerHTML = '<div class="big" style="color:'+(scr==='k'?'var(--kata)':'inherit')+'">'+show(ans)+'</div><div class="hint">How is this read?</div>';
-  } else if(mode==='write'){
-    box.innerHTML = '<div class="big rom">'+ans.r+'</div><div class="hint">Pick the '+(scr==='h'?'hiragana':'katakana')+'</div>';
-  } else {
-    box.innerHTML = '<div class="big">'+ans.h+'</div><div class="hint">Pick the matching katakana</div>';
-  }
-  ch.innerHTML = opts.map(function(o,i){
-    var label = mode==='read' ? o.r : show(o);
-    return '<button type="button" class="choice'+(mode==='read'?' rom':'')+'" data-i="'+i+'"'+(mode!=='read'&&scr==='k'?' style="color:var(--kata)"':'')+'><span class="kbd">'+(i+1)+'</span>'+label+'</button>';
-  }).join('');
-  $$('.choice', ch).forEach(function(b){ b.onclick = function(){ answer(+b.dataset.i); }; });
-}
-function answer(i){
-  if(!quiz.q || quiz.answered) return;
-  quiz.answered = true;
-  var q = quiz.q, chosen = q.opts[i], ok = chosen===q.ans;
-  var btns = $$('#qChoices .choice');
-  btns.forEach(function(b, j){
-    b.style.color = '';
-    if(q.opts[j]===q.ans) b.classList.add('right');
-    else if(j===i) b.classList.add('wrong');
-  });
-  quiz.total++;
-  var key = q.scr+':'+q.ans.h;
-  if(ok){
-    quiz.right++; quiz.streak++;
-    if(quiz.streak>state.best){ state.best=quiz.streak; store.set('best',state.best); }
-    if(state.missed[key]){ state.missed[key]--; if(state.missed[key]<=0) delete state.missed[key]; }
-    $('#qFeedback').innerHTML = '✅ Correct — <b>'+q.ans.h+' / '+q.ans.k+'</b> = '+q.ans.r;
-  } else {
-    quiz.streak = 0;
-    state.missed[key] = (state.missed[key]||0)+1;
-    $('#qFeedback').innerHTML = '❌ It was <b>'+(q.scr==='h'?q.ans.h:q.ans.k)+'</b> ('+q.ans.r+')'+(q.mode!=='read' ? ' — you picked '+(q.scr==='h'?chosen.h:chosen.k)+' ('+chosen.r+')' : '');
-  }
-  store.set('missed', state.missed);
-  if(q.mode!=='listen') play(q.ans.a);
-  $('#qScore').textContent = quiz.right+'/'+quiz.total;
-  $('#qStreak').textContent = quiz.streak;
-  $('#qBest').textContent = state.best;
-  renderMissed();
-}
-function renderMissed(){
-  var keys = Object.keys(state.missed);
-  if(!keys.length){ $('#qMissed').innerHTML=''; return; }
-  $('#qMissed').innerHTML = 'Needs practice (click to hear): ' + keys.map(function(k){
-    var it = BY_ID[k.slice(2)]; if(!it) return '';
-    return '<span data-a="'+it.a+'">'+(k[0]==='h'?it.h:it.k)+' '+it.r+'</span>';
-  }).join('') + ' · choose “My missed ones” to drill them';
-  $$('#qMissed span').forEach(function(s){ s.onclick=function(){ play(s.dataset.a, s); }; });
-}
-renderMissed();
-$('#qNext').onclick = nextQ;
-$('#qReplay').onclick = function(){ if(quiz.q) play(quiz.q.ans.a); };
-$('#qReset').onclick = function(){ quiz.right=0; quiz.total=0; quiz.streak=0; $('#qScore').textContent='0/0'; $('#qStreak').textContent='0'; };
-['#qMode','#qSet','#qScript'].forEach(function(s){ $(s).onchange = nextQ; });
-
-/* ---------- flashcards ---------- */
-var deck = [], fItem = null, fScript = 'h';
-function buildDeck(){
-  var set = $('#fSet').value, ss = scriptsInUse();
-  var base = SETS[set] || SETS.basic;
-  deck = [];
-  base.forEach(function(it){
-    ss.forEach(function(s){
-      deck.push({ it:it, s:s });
-    });
-  });
-  deck = shuffle(deck);
-  showCard();
-}
-function showCard(){
-  $('#fCard').classList.remove('flipped');
-  $('#fCount').textContent = deck.length + ' card' + (deck.length===1?'':'s') + ' left';
-  if(!deck.length){
-    fItem = null;
-    $('#fFront').innerHTML = '<span style="font-size:40px">🎉</span>';
-    $('#fRom').textContent = 'Deck done!'; $('#fBoth').textContent=''; $('#fEx').textContent = 'Pick another deck or press Shuffle.';
-    return;
-  }
-  var c = deck[0]; fItem = c.it; fScript = c.s;
-  setTimeout(function(){ // wait for flip-back before swapping the answer side
-    $('#fFront').textContent = c.s==='h' ? c.it.h : c.it.k;
-    $('#fFront').style.color = c.s==='k' ? 'var(--kata)' : '';
-    $('#fRom').textContent = c.it.r;
-    $('#fBoth').innerHTML = c.it.h + ' <span style="color:var(--kata)">'+c.it.k+'</span>';
-    var list = EX[c.it.h] && EX[c.it.h][c.s];
-    var ex = Array.isArray(list) ? list[0].split('|') : null;
-    $('#fEx').innerHTML = ex ? ex[0]+' ('+esc(ex[1])+') — '+esc(ex[2]) : '';
-  }, 180);
-}
-function flip(){
-  if(!fItem) return;
-  var f = $('#fCard'); f.classList.toggle('flipped');
-  if(f.classList.contains('flipped')) play(fItem.a);
-}
-$('#fCard').onclick = flip;
-$('#fPlay').onclick = function(){ if(fItem) play(fItem.a, $('#fPlay')); };
-$('#fAgain').onclick = function(){ if(!deck.length) return; var c = deck.shift(); var pos = Math.min(deck.length, 3 + Math.floor(Math.random()*4)); deck.splice(pos,0,c); showCard(); };
-$('#fGot').onclick = function(){ if(!deck.length) return; deck.shift(); showCard(); };
-$('#fShuffle').onclick = buildDeck;
-$('#fSet').onchange = buildDeck;
-
 /* ---------- particles ---------- */
 $('#particleList').innerHTML = PARTICLES.map(function(p, i){
   return '<div class="row"><button type="button" class="pk" data-pi="'+i+'" title="Play">'+p[0]+'<small>'+p[1]+'</small></button>'+
@@ -1137,111 +918,14 @@ $$('#particleList .pk').forEach(function(b){
   b.onclick = function(){ var p = PARTICLES[+b.dataset.pi]; playSeq(p[2].map(function(k){ return {key:k, el:b}; })); };
 });
 
-var fillOrder = shuffle(FILL.map(function(_,i){ return i; })), fillIdx = 0, fillScore = 0, fillTotal = 0;
-function renderFill(){
-  var f = FILL[fillOrder[fillIdx % fillOrder.length]];
-  var box = $('#fillBox');
-  box.innerHTML = '<div class="note" style="margin:0">Score: '+fillScore+'/'+fillTotal+'</div>'+
-    '<div class="sent">'+f[0]+'<span class="blank">？</span>'+f[1]+'</div>'+
-    '<div class="note" style="margin:0">“'+esc(f[2])+'”</div>'+
-    '<div class="opts">'+shuffle(f[3]).map(function(o){ return '<button type="button" class="btn" data-o="'+o+'">'+o+'</button>'; }).join('')+'</div>'+
-    '<div class="feedback" style="text-align:left" id="fillFb"></div>';
-  var done = false;
-  $$('.opts button', box).forEach(function(b){
-    b.onclick = function(){
-      if(done) return; done = true; fillTotal++;
-      var ok = b.dataset.o===f[4];
-      if(ok) fillScore++;
-      $$('.opts button', box).forEach(function(x){ if(x.dataset.o===f[4]) x.classList.add('good'); });
-      if(!ok) b.style.borderColor = 'var(--bad)';
-      $('.blank', box).textContent = f[4];
-      $('#fillFb').innerHTML = (ok?'✅ Correct! ':'❌ The answer is <b>'+f[4]+'</b>. ') + '<button type="button" class="btn primary" id="fillNext" style="margin-left:8px">Next →</button>';
-      $('#fillNext').onclick = function(){ fillIdx++; if(fillIdx % fillOrder.length === 0) fillOrder = shuffle(fillOrder); renderFill(); };
-    };
-  });
-}
-renderFill();
-
-/* ---------- loanwords ---------- */
-$('#loanList').innerHTML = LOANS.map(function(w){
-  return '<div class="row loan"><div class="pk kata">'+w[0]+'</div><div class="rb"><div class="x">'+esc(w[1])+'</div><div class="m">'+esc(w[2])+'</div></div></div>';
-}).join('');
-function applyLoanHide(){
-  var hide = $('#loanHide').checked;
-  $$('#loanList .loan').forEach(function(r){ r.querySelector('.m').style.visibility = hide ? 'hidden' : ''; r.querySelector('.x').style.visibility = hide ? 'hidden' : ''; r.style.cursor = hide ? 'pointer' : ''; });
-}
-$('#loanHide').onchange = applyLoanHide;
-$$('#loanList .loan').forEach(function(r){
-  r.onclick = function(){ r.querySelector('.m').style.visibility=''; r.querySelector('.x').style.visibility=''; };
-});
-
-/* ---------- contrasts (learn) ---------- */
-$('#pairList').innerHTML = PAIRS.map(function(p, i){
-  var item = function(w, j){ return '<button type="button" class="pi" data-p="'+i+'" data-j="'+j+'"><span class="w">'+w[0]+'</span><span class="wr">'+w[1]+'</span><span class="wm">'+esc(w[2])+'</span></button>'; };
-  return '<div class="pair"><div class="pn"><span>'+esc(p[2])+'</span><button type="button" class="mini" data-both="'+i+'">▶ Play both</button></div>'+
-    '<div class="items">'+item(p[0],0)+item(p[1],1)+'</div></div>';
-}).join('');
-$$('#pairList .pi').forEach(function(b){
-  b.onclick = function(){ play(PAIRS[+b.dataset.p][+b.dataset.j][1], b); };
-});
-$$('#pairList .mini').forEach(function(b){
-  b.onclick = function(){
-    var i = +b.dataset.both, card = b.closest('.pair');
-    playSeq([0,1].map(function(j){ return { key:PAIRS[i][j][1], el:$('.pi[data-j="'+j+'"]', card) }; }));
-  };
-});
-
-/* ---------- listening test (practice) ---------- */
-var lt = { q:null, done:false, right:0, total:0, streak:0, last:-1 };
-function nextListen(){
-  var i; do { i = Math.floor(Math.random()*PAIRS.length); } while(PAIRS.length>1 && i===lt.last);
-  lt.last = i;
-  var j = Math.random()<0.5 ? 0 : 1;
-  lt.q = { i:i, j:j }; lt.done = false;
-  $('#lFeedback').textContent = '';
-  $('#lHint').textContent = 'Which word did you hear?';
-  $('#lChoices').innerHTML = PAIRS[i].slice(0,2).map(function(w, k){
-    return '<button type="button" class="pi" data-k="'+k+'"><span class="w">'+(k+1)+'. '+w[0]+'</span><span class="wr">'+w[1]+'</span><span class="wm">'+esc(w[2])+'</span></button>';
-  }).join('');
-  $$('#lChoices .pi').forEach(function(b){ b.onclick = function(){ answerListen(+b.dataset.k); }; });
-  setTimeout(function(){ play(PAIRS[i][j][1]); }, 150);
-}
-function answerListen(k){
-  if(!lt.q || lt.done) return;
-  lt.done = true; lt.total++;
-  var q = lt.q, ok = k===q.j, btns = $$('#lChoices .pi');
-  btns[q.j].classList.add('right'); if(!ok) btns[k].classList.add('wrong');
-  if(ok){ lt.right++; lt.streak++; } else lt.streak = 0;
-  $('#lFeedback').innerHTML = (ok ? '✅ Correct!' : '❌ You heard <b>'+PAIRS[q.i][q.j][0]+'</b>.') + ' <span style="color:var(--muted)">('+esc(PAIRS[q.i][2])+') — click either word to compare.</span>';
-  btns.forEach(function(b, x){ b.onclick = function(){ play(PAIRS[q.i][x][1], b); }; });
-  $('#lScore').textContent = lt.right+'/'+lt.total;
-  $('#lStreak').textContent = lt.streak;
-}
-$('#lNext').onclick = nextListen;
-$('#lReplay').onclick = function(){ if(lt.q) play(PAIRS[lt.q.i][lt.q.j][1]); };
-
 /* ---------- keyboard ---------- */
 document.addEventListener('keydown', function(e){
   if(e.target.matches('input, select, textarea')) return;
-  if(activePanel==='quiz'){
-    if(e.key>='1' && e.key<='4'){ answer(+e.key-1); e.preventDefault(); }
-    else if(e.key==='r' || e.key==='R'){ if(quiz.q) play(quiz.q.ans.a); }
-    else if(e.key==='Enter'){ nextQ(); e.preventDefault(); }
-  } else if(activePanel==='listen'){
-    if(e.key==='1' || e.key==='2'){ answerListen(+e.key-1); e.preventDefault(); }
-    else if(e.key==='r' || e.key==='R'){ $('#lReplay').click(); }
-    else if(e.key==='Enter'){ nextListen(); e.preventDefault(); }
-  } else if(activePanel==='flash'){
-    if(e.key===' '){ flip(); e.preventDefault(); }
-    else if(e.key==='ArrowRight'){ $('#fGot').click(); }
-    else if(e.key==='ArrowLeft'){ $('#fAgain').click(); }
-  }
   if(e.key==='Escape') closeDrawer();
 });
 
 /* ---------- init ---------- */
 renderCharts();
-buildDeck();
 selectMode(activeMode);
 })();
 

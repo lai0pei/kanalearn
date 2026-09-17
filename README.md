@@ -2,7 +2,7 @@
 
 Learn Japanese hiragana and katakana the easy way — listen, watch, write, and test yourself, all in one page.
 
-**👉 [Open the App](#)** ← add your link here once it's live
+👉 [Open the App](https://lai0pei.github.io/kanalearn/)
 
 ---
 
@@ -17,6 +17,8 @@ Tap any hiragana or katakana tile on the chart.
 ```
 
 A panel slides open on the side with everything about that character.
+
+> 📱 **On your phone?** Choose **🔊 Just play sound** at the top of the chart to only hear the sound. Press and hold a character whenever you want the writing guide.
 
 ### 2️⃣ Listen to it
 Hit the 🔊 play button to hear how it sounds.
