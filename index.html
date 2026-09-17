@@ -41,6 +41,7 @@ nav.tabs button[hidden]{display:none}
 nav.tabs button{border:1px solid var(--line);background:var(--card);padding:7px 13px;border-radius:99px;font-size:13px;cursor:pointer;white-space:nowrap}
 nav.tabs button.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;padding:4px 12px 10px;font-size:12px}
+#p-chart .toolbar{padding:6px 0 4px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:var(--card)}
 .seg button{border:0;background:transparent;padding:5px 11px;cursor:pointer;font-size:12px}
 .seg button.on{background:var(--ink);color:var(--paper)}
@@ -50,7 +51,7 @@ nav.tabs button.active{background:var(--accent);border-color:var(--accent);color
 .toolbar select{font:inherit;padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .icon-btn{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 10px;cursor:pointer;font-size:12px}
 
-main{max-width:960px;margin:0 auto;padding:12px 16px 60px;transition:margin .22s}
+main{max-width:960px;margin:0 auto;padding:12px 16px calc(60px + env(safe-area-inset-bottom));transition:margin .22s}
 .panel{display:none}.panel.active{display:block}
 .mode-intro{font-size:12px;color:var(--muted);text-align:center;margin:4px 0 0}
 h2{font-size:18px;margin:22px 0 2px}
@@ -132,12 +133,9 @@ body.hide-romaji .tile .r{visibility:hidden}
 .tip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px}
 .tip h4{margin:0 0 4px;font-size:14px}
 .tip .jp{font-size:18px}
-footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 16px 30px}
 kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;font-size:11px}
 .tapmode{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 10px;margin:10px 0 0;font-size:13px;color:var(--muted)}
 .tapmode .seg button{padding:7px 12px;font-size:13px}
-.tap-hint{flex-basis:100%;text-align:center;margin:0;font-size:12px}
-.tap-hint[hidden]{display:none}
 .tile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .tile.pressing{transform:scale(.94);border-color:var(--accent)}
 /* ---------- touch & responsive ---------- */
@@ -147,7 +145,6 @@ button,select,label,.tile,.pk{touch-action:manipulation;-webkit-tap-highlight-co
 button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .side{padding-bottom:calc(30px + env(safe-area-inset-bottom));overscroll-behavior:contain}
 .side-head{position:sticky;top:-14px;z-index:2;background:var(--card);margin:-14px -16px 0;padding:14px 16px 8px;border-bottom:1px solid var(--line)}
-footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 nav.tabs{scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
 
@@ -242,6 +239,11 @@ nav.tabs::-webkit-scrollbar{display:none}
     <button data-m="learn" data-p="tips">Rules &amp; Tips</button>
     <button data-m="learn" data-p="particles">Particles</button>
   </nav>
+</div>
+
+<main>
+<!-- CHART -->
+<section class="panel" id="p-chart">
   <div class="toolbar">
     <div class="seg" id="scriptSeg">
       <button data-s="h" class="on"><span class="lg">ひ Hiragana</span><span class="sm">Hira</span></button>
@@ -254,18 +256,12 @@ nav.tabs::-webkit-scrollbar{display:none}
     </label>
     <button class="icon-btn" id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">◐<span class="lbl"> Theme</span></button>
   </div>
-</div>
-
-<main>
-<!-- CHART -->
-<section class="panel" id="p-chart">
   <div class="tapmode">
     <span class="tapmode-l">When I tap a character:</span>
     <div class="seg" id="tapSeg" role="group" aria-label="What happens when you tap a character">
       <button type="button" data-t="sound">🔊 Just play sound</button>
       <button type="button" data-t="details">✍️ Sound + writing</button>
     </div>
-    <p class="tap-hint" id="tapHint"></p>
   </div>
   <h2>Basic Sounds — Gojūon (五十音)</h2>
   <p class="note">46 core sounds. Tap a tile to hear it. Use the ▶ button at the start of a row to hear the whole row.</p>
@@ -304,7 +300,6 @@ nav.tabs::-webkit-scrollbar{display:none}
 </section>
 </main>
 
-<footer>Your settings and open tab are saved in this browser.<br>Stroke-order data from <a href="https://kanjivg.tagaini.net" style="color:var(--accent)">KanjiVG</a> © Ulrich Apel, licensed <a href="https://creativecommons.org/licenses/by-sa/3.0/" style="color:var(--accent)">CC BY-SA 3.0</a>.</footer>
 
 <aside class="side" id="side" aria-label="Character details">
   <div class="side-head">
@@ -658,7 +653,6 @@ function renderCharts(){
 }
 function applyTapMode(){
   $$('#tapSeg button').forEach(function(b){ b.classList.toggle('on', b.dataset.t===state.tap); });
-  $('#tapHint').hidden = state.tap!=='sound';
 }
 $$('#tapSeg button').forEach(function(b){
   b.onclick = function(){ state.tap = b.dataset.t; store.set('tap', state.tap); applyTapMode(); };
