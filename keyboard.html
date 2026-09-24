@@ -60,6 +60,16 @@ main{max-width:960px;margin:0 auto;padding:14px 16px calc(60px + env(safe-area-i
 .out-actions button:hover{border-color:var(--accent);color:var(--accent)}
 
 /* keyboard */
+.kbwrap{position:relative}
+.kbwrap::after{content:"";position:absolute;top:0;right:0;width:40px;height:100%;pointer-events:none;
+  border-radius:0 16px 16px 0;opacity:0;transition:opacity .2s;
+  background:linear-gradient(to left,var(--soft),rgba(0,0,0,0))}
+.kbwrap.more::after{opacity:1}
+.legend.only-coarse{display:none}
+@media (pointer:coarse),(max-width:640px){
+  .legend.only-fine{display:none}
+  .legend.only-coarse{display:flex}
+}
 .kb{background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:10px;overflow-x:auto}
 .kb-inner{min-width:700px}
 .krow{display:flex;gap:6px;margin-bottom:6px;justify-content:center}
@@ -97,12 +107,38 @@ body.hide-latin .key .lat{visibility:hidden}
 .legend{display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-start;font-size:12px;color:var(--muted);margin-top:12px}
 h2{font-size:18px;margin:22px 0 2px}
 @media (max-width:640px){
-  header{padding:14px 14px 4px;padding-top:calc(14px + env(safe-area-inset-top))}
-  main{padding:8px 10px 40px}
-  .key{height:50px;min-width:38px}
-  .key .kana{font-size:17px}
+  /* phones: the whole board fits on screen — no scrolling.
+     Labels stay but shrink: the corner letter shows which US key the kana
+     sits on, so the binding is learnable on a phone too. */
+  .key[data-code="Tab"],.key[data-code="CapsLock"],
+  .key[data-code="ShiftRight"],.key[data-code="Backquote"]{display:none}
+  .kb{padding:6px;overflow:hidden}
+  .kb-inner{min-width:0}
+  .krow{gap:3px;margin-bottom:3px}
+  .key{min-width:0;height:48px;padding:0;border-radius:7px;box-shadow:0 1px 0 var(--line)}
+  .key .lat{top:2px;left:3px;font-size:clamp(6px,1.8vw,9px)}
+  .key[data-code="Space"] .lat,.key[data-code="ShiftLeft"] .lat{display:none}
+  .key .kana{font-size:clamp(11px,3.4vw,17px);margin-top:8px;line-height:1}
+  .key .rom{font-size:clamp(6px,1.9vw,9px);line-height:1;margin-top:2px}
+  .key .sh{top:2px;right:3px;font-size:clamp(7px,2.2vw,11px)}
+  .key.wide{flex:1.3 1 0}
+  .key.xwide{flex:1 1 0}
+  .key[data-code="ShiftLeft"]{flex:1.3 1 0}
+  .key[data-code="ShiftLeft"] .kana{font-size:14px}
+  .key.mod .kana{font-size:12px}
+  header{padding:11px 0 10px}
+  .brand-t b{font-size:15px}
+  .toolbar{gap:10px 14px}
+  .wrap{padding:0 12px}
   .drill-q{font-size:44px}
 }
+@media (max-width:360px){
+  /* very narrow: tighten the two corner labels so they never touch */
+  .key .lat{top:1px;left:2px;font-size:5.5px}
+  .key .sh{top:1px;right:2px;font-size:8px}
+  .key .kana{margin-top:7px}
+}
+
 /* ---- shared app shell ---- */
 .wrap{max-width:960px;margin:0 auto;padding:0 16px;width:100%}
 header{padding:14px 0 13px;text-align:left;border-bottom:1px solid var(--line)}
@@ -131,6 +167,14 @@ main{max-width:960px;margin:0 auto}
 .themebtn{border:1px solid var(--line);background:var(--card);border-radius:99px;width:34px;height:34px;
   display:grid;place-items:center;font-size:15px;cursor:pointer;padding:0;flex:none}
 .themebtn:hover{border-color:var(--accent);color:var(--accent)}
+.toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);
+  border-radius:99px;padding:7px 12px 7px 14px;font-size:13px;cursor:pointer;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;transition:border-color .15s,background .15s}
+.toggle:hover{border-color:var(--accent)}
+.toggle:active{transform:scale(.97)}
+.toggle .tval{font-weight:600}
+.toggle .tcyc{font-size:11px;color:var(--muted);line-height:1}
+.toggle:hover .tcyc{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -154,10 +198,9 @@ main{max-width:960px;margin:0 auto}
   <div class="toolbar">
     <div class="tgroup">
       <span class="tglabel">Script</span>
-      <div class="seg" id="scriptSeg">
-        <button data-s="h" class="on">ひ Hiragana</button>
-        <button data-s="k">カ Katakana</button>
-      </div>
+      <button type="button" class="toggle" id="scriptToggle" aria-label="Change script">
+        <span class="tval"></span><span class="tcyc">↻</span>
+      </button>
     </div>
     <div class="tgroup">
       <span class="tglabel">Practice</span>
@@ -191,11 +234,17 @@ main{max-width:960px;margin:0 auto}
     </div>
   </div>
 
-  <div class="kb"><div class="kb-inner" id="kb"></div></div>
+  <div class="kbwrap"><div class="kb" id="kbScroll"><div class="kb-inner" id="kb"></div></div></div>
 
-  <div class="legend">
-    <span>⌫ Backspace deletes</span><span>Space = space</span><span>Esc clears</span><span>Shift / CapsLock shows the alternate layer</span>
-    <span id="legendExtra"></span>
+  <div class="legend only-fine">
+    <span>⌫ deletes</span><span>Space inserts a space</span><span>Esc clears</span>
+    <span>Shift or CapsLock shows the alternate layer</span>
+    <span>Bracket keys add the dakuten / handakuten mark</span>
+  </div>
+  <div class="legend only-coarse">
+    <span>Tap the keys to type</span><span>The corner letter is the US key</span><span>⇧ shows the small kana</span>
+    <span>Bracket keys add the dakuten / handakuten mark</span>
+    <span>Use Back and Clear above to correct</span>
   </div>
 
   <h2>How this works</h2>
@@ -305,6 +354,10 @@ function renderKB(){
     html+='</div>';
   });
   $('#kb').innerHTML=html;
+  if(window.matchMedia && matchMedia('(max-width:640px)').matches){
+    var sl=$('#kb .key[data-code="ShiftLeft"]');
+    if(sl){ $('.lat',sl).textContent='⇧'; $('.kana',sl).textContent='⇧'; }
+  }
   keyEls={};
   $$('#kb .key').forEach(function(el){ keyEls[el.dataset.code]=el; });
   applyScriptLabels(); updateLayer();
@@ -485,17 +538,19 @@ $('#modeNote').innerHTML='<b>JIS kana layout</b> — each physical key types a k
   'Hold <b>Shift</b> (or CapsLock) for the small kana shown in the top-right corner of a key.';
 $('#helpText').textContent='Keys are matched by physical position, so this works on a US keyboard too - you are practising where each kana sits on a real Japanese board. '+
   'The virtual key highlights as you press and the kana audio follows. Turn on Drill mode to be given a kana and asked to find its key.';
-$('#legendExtra').textContent='Bracket keys add the dakuten / handakuten mark';
 
-$$('#scriptSeg button').forEach(function(b){
-  b.classList.toggle('on',b.dataset.s===state.script);
-  b.onclick=function(){
-    state.script=b.dataset.s; store.set('script',state.script);
-    $$('#scriptSeg button').forEach(function(x){x.classList.toggle('on',x===b);});
-    applyScriptLabels(); updateLayer(); render();
-    if(state.drill&&target) $('#dQ').textContent=state.script==='k'?toKata(target.kana):target.kana;
-  };
-});
+/* one button that cycles, rather than a row of choices */
+var SCRIPT_LABEL={ h:'ひ Hiragana', k:'カ Katakana' };
+function applyScriptToggle(){
+  $('#scriptToggle .tval').textContent = SCRIPT_LABEL[state.script] || SCRIPT_LABEL.h;
+}
+$('#scriptToggle').onclick=function(){
+  state.script = state.script==='h' ? 'k' : 'h';
+  store.set('script',state.script);
+  applyScriptToggle(); applyScriptLabels(); updateLayer(); render();
+  if(state.drill&&target) $('#dQ').textContent=state.script==='k'?toKata(target.kana):target.kana;
+};
+applyScriptToggle();
 $('#muteChk').checked=state.mute;
 $('#muteChk').onchange=function(e){
   state.mute=e.target.checked; store.set('kbMute',state.mute);
@@ -503,6 +558,19 @@ $('#muteChk').onchange=function(e){
 };
 
 renderKB(); render();
+
+/* show the edge fade only while more of the board is off-screen */
+(function(){
+  var sc=$('#kbScroll'), wrap=$('.kbwrap');
+  if(!sc||!wrap) return;
+  function upd(){
+    var more = sc.scrollWidth - sc.clientWidth - sc.scrollLeft > 4;
+    wrap.classList.toggle('more', more);
+  }
+  sc.addEventListener('scroll', upd, {passive:true});
+  window.addEventListener('resize', upd);
+  setTimeout(upd, 60);
+})();
 updateDrillStats();
 })();
 </script>

@@ -277,6 +277,14 @@ main{max-width:960px;margin:0 auto}
 .themebtn{border:1px solid var(--line);background:var(--card);border-radius:99px;width:34px;height:34px;
   display:grid;place-items:center;font-size:15px;cursor:pointer;padding:0;flex:none}
 .themebtn:hover{border-color:var(--accent);color:var(--accent)}
+.toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);
+  border-radius:99px;padding:7px 12px 7px 14px;font-size:13px;cursor:pointer;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;transition:border-color .15s,background .15s}
+.toggle:hover{border-color:var(--accent)}
+.toggle:active{transform:scale(.97)}
+.toggle .tval{font-weight:600}
+.toggle .tcyc{font-size:11px;color:var(--muted);line-height:1}
+.toggle:hover .tcyc{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -300,18 +308,15 @@ main{max-width:960px;margin:0 auto}
   <div class="toolbar">
     <div class="tgroup">
       <span class="tglabel">Script</span>
-      <div class="seg" id="scriptSeg">
-        <button data-s="h" class="on"><span class="lg">ひ Hiragana</span><span class="sm">Hira</span></button>
-        <button data-s="k"><span class="lg">カ Katakana</span><span class="sm">Kata</span></button>
-        <button data-s="b">Both</button>
-      </div>
+      <button type="button" class="toggle" id="scriptToggle" aria-label="Change script">
+        <span class="tval"></span><span class="tcyc">↻</span>
+      </button>
     </div>
     <div class="tgroup">
       <span class="tglabel">Tapping a character</span>
-      <div class="seg" id="tapSeg" role="group" aria-label="What happens when you tap a character">
-        <button type="button" data-t="sound">🔊 Just the sound</button>
-        <button type="button" data-t="details">✍️ Sound + writing</button>
-      </div>
+      <button type="button" class="toggle" id="tapToggle" aria-label="Change what tapping a character does">
+        <span class="tval"></span><span class="tcyc">↻</span>
+      </button>
     </div>
   </div>
 </div></div>
@@ -630,14 +635,19 @@ $('#themeBtn').onclick = function(){
   var now = document.documentElement.getAttribute('data-theme');
   state.theme = now==='dark' ? 'light' : 'dark'; store.set('theme',state.theme); applyTheme(); if(drawerItem) redrawPad();
 };
-$$('#scriptSeg button').forEach(function(b){
-  b.classList.toggle('on', b.dataset.s===state.script);
-  b.onclick = function(){
-    state.script = b.dataset.s; store.set('script',state.script);
-    $$('#scriptSeg button').forEach(function(x){ x.classList.toggle('on', x===b); });
-    renderCharts();
-  };
-});
+/* one button that cycles, rather than a row of choices */
+var SCRIPT_CYCLE = ['h','k','b'];
+var SCRIPT_LABEL = { h:'ひ Hiragana', k:'カ Katakana', b:'ひカ Both' };
+function applyScriptToggle(){
+  $('#scriptToggle .tval').textContent = SCRIPT_LABEL[state.script] || SCRIPT_LABEL.h;
+}
+$('#scriptToggle').onclick = function(){
+  var i = SCRIPT_CYCLE.indexOf(state.script);
+  state.script = SCRIPT_CYCLE[(i+1) % SCRIPT_CYCLE.length];
+  store.set('script', state.script);
+  applyScriptToggle(); renderCharts();
+};
+applyScriptToggle();
 state.speed = 1; store.set('speed',1);
 
 /* ---------- tabs (remembered across reloads) ---------- */
@@ -697,12 +707,14 @@ function renderCharts(){
   renderChart($('#chart-combo'), COMBO, 3);
   if(drawerItem) markSelected(drawerItem);
 }
+var TAP_LABEL = { sound:'🔊 Just the sound', details:'✍️ Sound + writing' };
 function applyTapMode(){
-  $$('#tapSeg button').forEach(function(b){ b.classList.toggle('on', b.dataset.t===state.tap); });
+  $('#tapToggle .tval').textContent = TAP_LABEL[state.tap] || TAP_LABEL.sound;
 }
-$$('#tapSeg button').forEach(function(b){
-  b.onclick = function(){ state.tap = b.dataset.t; store.set('tap', state.tap); applyTapMode(); };
-});
+$('#tapToggle').onclick = function(){
+  state.tap = state.tap==='sound' ? 'details' : 'sound';
+  store.set('tap', state.tap); applyTapMode();
+};
 applyTapMode();
 
 var press = { timer:null, tile:null, fired:false, x:0, y:0 };
