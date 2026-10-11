@@ -9,7 +9,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Kana Hub">
 <meta name="description" content="Learn Japanese hiragana and katakana: listen, watch the stroke order, and practice writing.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23b3272d'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='white'>あ</text></svg>">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="icon" type="image/png" sizes="512x512" href="logo.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Kana Study Hub — Hiragana &amp; Katakana</title>
 <style>
 /* Textbook-style kana (き/さ/そ/り/ん with separate strokes, as in 教科書体). */
@@ -285,6 +287,8 @@ main{max-width:960px;margin:0 auto}
 .toggle .tval{font-weight:600}
 .toggle .tcyc{font-size:11px;color:var(--muted);line-height:1}
 .toggle:hover .tcyc{color:var(--accent)}
+#scriptSeg button{padding:8px 13px;font-size:13px}
+@media (max-width:640px){#scriptSeg button{padding:8px 11px}}
 </style>
 </head>
 <body>
@@ -308,9 +312,11 @@ main{max-width:960px;margin:0 auto}
   <div class="toolbar">
     <div class="tgroup">
       <span class="tglabel">Script</span>
-      <button type="button" class="toggle" id="scriptToggle" aria-label="Change script">
-        <span class="tval"></span><span class="tcyc">↻</span>
-      </button>
+      <div class="seg" id="scriptSeg" role="group" aria-label="Script">
+        <button type="button" data-s="h"><span class="lg">ひ Hiragana</span><span class="sm">ひ</span></button>
+        <button type="button" data-s="k"><span class="lg">カ Katakana</span><span class="sm">カ</span></button>
+        <button type="button" data-s="b"><span class="lg">ひカ Both</span><span class="sm">ひカ</span></button>
+      </div>
     </div>
     <div class="tgroup">
       <span class="tglabel">Tapping a character</span>
@@ -589,7 +595,7 @@ var state = {
   script: store.get('script','h'),
   hide: store.get('hide',false),
   speed: store.get('speed',1),
-  tap: store.get('tap', (window.matchMedia && matchMedia('(max-width:640px)').matches) ? 'sound' : 'details'),
+  tap: store.get('tap','details'),
   theme: store.get('theme',null),
   best: store.get('best',0)
 };
@@ -635,19 +641,20 @@ $('#themeBtn').onclick = function(){
   var now = document.documentElement.getAttribute('data-theme');
   state.theme = now==='dark' ? 'light' : 'dark'; store.set('theme',state.theme); applyTheme(); if(drawerItem) redrawPad();
 };
-/* one button that cycles, rather than a row of choices */
-var SCRIPT_CYCLE = ['h','k','b'];
-var SCRIPT_LABEL = { h:'ひ Hiragana', k:'カ Katakana', b:'ひカ Both' };
-function applyScriptToggle(){
-  $('#scriptToggle .tval').textContent = SCRIPT_LABEL[state.script] || SCRIPT_LABEL.h;
+function applyScriptSeg(){
+  $$('#scriptSeg button').forEach(function(b){
+    var on = b.dataset.s===state.script;
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+  });
 }
-$('#scriptToggle').onclick = function(){
-  var i = SCRIPT_CYCLE.indexOf(state.script);
-  state.script = SCRIPT_CYCLE[(i+1) % SCRIPT_CYCLE.length];
-  store.set('script', state.script);
-  applyScriptToggle(); renderCharts();
-};
-applyScriptToggle();
+$$('#scriptSeg button').forEach(function(b){
+  b.onclick = function(){
+    if(state.script===b.dataset.s) return;
+    state.script = b.dataset.s; store.set('script', state.script);
+    applyScriptSeg(); renderCharts();
+  };
+});
+applyScriptSeg();
 state.speed = 1; store.set('speed',1);
 
 /* ---------- tabs (remembered across reloads) ---------- */
@@ -709,7 +716,7 @@ function renderCharts(){
 }
 var TAP_LABEL = { sound:'🔊 Just the sound', details:'✍️ Sound + writing' };
 function applyTapMode(){
-  $('#tapToggle .tval').textContent = TAP_LABEL[state.tap] || TAP_LABEL.sound;
+  $('#tapToggle .tval').textContent = TAP_LABEL[state.tap] || TAP_LABEL.details;
 }
 $('#tapToggle').onclick = function(){
   state.tap = state.tap==='sound' ? 'details' : 'sound';
